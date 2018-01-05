@@ -12,7 +12,6 @@ import (
 
 func newConfig() (*viper.Viper, error) {
 	c := viper.New()
-	c.SetDefault("cookie_secret", "-vztTB2-B8TJjmoD")
 	c.SetDefault("http_addr", ":8888")
 	c.SetDefault("http_cert_file", "")
 	c.SetDefault("http_key_file", "")
