@@ -5,8 +5,6 @@ import (
 	gorilla_mux "github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"net/http"
-
-	"github.com/nstapelbroek/gatekeeper/handlers"
 )
 
 // New is the constructor for Application struct.
@@ -32,7 +30,7 @@ func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
 
-	router.Handle("/", http.HandlerFunc(handlers.GetHome)).Methods("GET")
+	//router.Handle("/", http.HandlerFunc(handlers.GetHome)).Methods("GET")
 
 	// Due to the first-match approach of Gorilla mux, we serve the static files last
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
