@@ -2,45 +2,29 @@
 package middlewares
 
 import (
+	"errors"
 	"net/http"
 
-	"github.com/gorilla/sessions"
-	"github.com/jmoiron/sqlx"
-	"context"
+	"github.com/nstapelbroek/gatekeeper/libhttp"
+	"github.com/spf13/viper"
 )
 
-func SetDB(db *sqlx.DB) func(http.Handler) http.Handler {
+// MustAuthenticate Enforces HTTP basic auth on a request and will respond early if the credentials do not match
+func MustAuthenticate(config *viper.Viper) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			req = req.WithContext(context.WithValue(req.Context(), "db", db))
+			username, password, success := libhttp.ParseBasicAuth(req.Header.Get("Authorization"))
+			if !success {
+				libhttp.BasicAuthUnauthorized(res, errors.New("Failed decoding basic auth header"))
+				return
+			}
+
+			if config.GetString("http_auth_username") != username || config.GetString("http_auth_password") != password {
+				libhttp.BasicAuthUnauthorized(res, errors.New("Username or password does not match"))
+				return
+			}
 
 			next.ServeHTTP(res, req)
 		})
 	}
-}
-
-func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			req = req.WithContext(context.WithValue(req.Context(), "sessionStore", sessionStore))
-
-			next.ServeHTTP(res, req)
-		})
-	}
-}
-
-// MustLogin is a middleware that checks existence of current user.
-func MustLogin(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		sessionStore := req.Context().Value( "sessionStore").(sessions.Store)
-		session, _ := sessionStore.Get(req, "gatekeeper-session")
-		userRowInterface := session.Values["user"]
-
-		if userRowInterface == nil {
-			http.Redirect(res, req, "/login", 302)
-			return
-		}
-
-		next.ServeHTTP(res, req)
-	})
 }

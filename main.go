@@ -1,11 +1,12 @@
 package main
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/tylerb/graceful"
-	"net/http"
-	"time"
 
 	"github.com/nstapelbroek/gatekeeper/application"
 )
@@ -16,6 +17,8 @@ func newConfig() (*viper.Viper, error) {
 	c.SetDefault("http_cert_file", "")
 	c.SetDefault("http_key_file", "")
 	c.SetDefault("http_drain_interval", "1s")
+	c.SetDefault("http_auth_username", "user")
+	c.SetDefault("http_auth_password", "password")
 
 	c.AutomaticEnv()
 

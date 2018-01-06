@@ -14,7 +14,7 @@ var BasicRealm = "Authorization Required"
 
 // ParseBasicAuth parses an HTTP Basic Authentication string.
 // "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" returns ("Aladdin", "open sesame", true).
-func ParseBasicAuth(auth string) (username, password string, ok bool) {
+func ParseBasicAuth(auth string) (username string, password string, ok bool) {
 	if !strings.HasPrefix(auth, "Basic ") {
 		return
 	}
