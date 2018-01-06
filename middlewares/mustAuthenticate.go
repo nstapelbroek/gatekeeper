@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"crypto/subtle"
+
 	"github.com/nstapelbroek/gatekeeper/libhttp"
 	"github.com/spf13/viper"
 )
@@ -19,7 +21,9 @@ func MustAuthenticate(config *viper.Viper) func(http.Handler) http.Handler {
 				return
 			}
 
-			if config.GetString("http_auth_username") != username || config.GetString("http_auth_password") != password {
+			correctUsername := []byte(config.GetString("http_auth_username"))
+			correctPassword := []byte(config.GetString("http_auth_password"))
+			if subtle.ConstantTimeCompare(correctUsername, []byte(username)) == 0 && subtle.ConstantTimeCompare(correctPassword, []byte(password)) == 0 {
 				libhttp.BasicAuthUnauthorized(res, errors.New("Username or password does not match"))
 				return
 			}
