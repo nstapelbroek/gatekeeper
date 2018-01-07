@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 	"time"
 
@@ -37,6 +38,15 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
+
+	logParameter := flag.String("log-level", "info", "determine the verbosity of the logger")
+	flag.Parse()
+	logLevel, err := logrus.ParseLevel(*logParameter)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	logrus.SetLevel(logLevel)
 
 	middle, err := app.MiddlewareStruct()
 	if err != nil {
