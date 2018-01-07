@@ -26,6 +26,7 @@ type Application struct {
 func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 	middle := interpose.New()
 	middle.Use(middlewares.MustAuthenticate(app.config))
+	middle.Use(middlewares.ResolveOrigin(app.config))
 	middle.UseHandler(app.mux())
 
 	return middle, nil

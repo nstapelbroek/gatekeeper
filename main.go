@@ -19,6 +19,8 @@ func newConfig() (*viper.Viper, error) {
 	c.SetDefault("http_drain_interval", "1s")
 	c.SetDefault("http_auth_username", "user")
 	c.SetDefault("http_auth_password", "password")
+	c.SetDefault("resolve_type", "RemoteAddr")
+	c.SetDefault("resolve_header", "X-Forwarded-For")
 
 	c.AutomaticEnv()
 
