@@ -1,22 +1,15 @@
-FROM golang
+FROM alpine:3.7
 
-# Fetch dependencies
-RUN go get github.com/tools/godep
+ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.2/s6-overlay-amd64.tar.gz /tmp/
+COPY ./dev/docker/etc /etc
+ENTRYPOINT ["/init"]
 
-# Add project directory to Docker image.
-ADD . /go/src/github.com/nstapelbroek/gatekeeper
+# Run container setup commands
+RUN apk add --no-cache tar ca-certificates \
+    && mkdir /app \
+    && adduser -S golang\
+    && tar xzf /tmp/s6-overlay-amd64.tar.gz -C /
 
-ENV USER nico
-ENV HTTP_ADDR :8888
-ENV HTTP_DRAIN_INTERVAL 1s
-ENV COOKIE_SECRET -vztTB2-B8TJjmoD
+COPY gatekeeper /app/gatekeeper
 
-# Replace this with actual PostgreSQL DSN.
-ENV DSN postgres://nico@localhost:5432/gatekeeper?sslmode=disable
-
-WORKDIR /go/src/github.com/nstapelbroek/gatekeeper
-
-RUN godep go build
-
-EXPOSE 8888
-CMD ./gatekeeper
+EXPOSE 8080
