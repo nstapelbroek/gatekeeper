@@ -3,14 +3,26 @@ package handlers
 import (
 	"net"
 	"net/http"
+	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 )
 
 func PostOpen(res http.ResponseWriter, req *http.Request) {
-	origin := req.Context().Value("origin")
-	iets, assertionSuceeded := origin.(net.IP)
+	contextOrigin := req.Context().Value("origin")
+	origin, assertionSuceeded := contextOrigin.(net.IP)
 	if !assertionSuceeded {
 		panic("context origin was somehow not the expected net.IP type")
 	}
 
-	res.Write([]byte(iets.To4().String()))
+	direction, _ := firewall.NewDirectionFromString("inbound")
+	protocol, _ := firewall.NewProtocolFromString("TCP")
+
+	rule := firewall.Rule{
+		Direction: direction,
+		Protocol:  protocol,
+		IP:        origin,
+		Port:      firewall.NewSinglePort(22),
+	}
+
+	res.Write([]byte(origin.To4().String()))
+	res.Write([]byte(rule.Direction.String()))
 }
