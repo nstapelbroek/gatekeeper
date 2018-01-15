@@ -1,4 +1,4 @@
-package libstring
+package lib
 
 import (
 	"testing"

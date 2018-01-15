@@ -1,5 +1,5 @@
 // Package libstring provides string related library functions.
-package libstring
+package lib
 
 import (
 	"crypto/rand"

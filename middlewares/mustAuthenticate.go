@@ -7,7 +7,7 @@ import (
 
 	"crypto/subtle"
 
-	"github.com/nstapelbroek/gatekeeper/libhttp"
+	"github.com/nstapelbroek/gatekeeper/lib"
 	"github.com/spf13/viper"
 )
 
@@ -15,16 +15,16 @@ import (
 func MustAuthenticate(config *viper.Viper) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			username, password, success := libhttp.ParseBasicAuth(req.Header.Get("Authorization"))
+			username, password, success := lib.ParseBasicAuth(req.Header.Get("Authorization"))
 			if !success {
-				libhttp.BasicAuthUnauthorized(res, errors.New("Failed decoding basic auth header"))
+				lib.BasicAuthUnauthorized(res, errors.New("Failed decoding basic auth header"))
 				return
 			}
 
 			correctUsername := []byte(config.GetString("http_auth_username"))
 			correctPassword := []byte(config.GetString("http_auth_password"))
 			if subtle.ConstantTimeCompare(correctUsername, []byte(username)) == 0 && subtle.ConstantTimeCompare(correctPassword, []byte(password)) == 0 {
-				libhttp.BasicAuthUnauthorized(res, errors.New("Username or password does not match"))
+				lib.BasicAuthUnauthorized(res, errors.New("Username or password does not match"))
 				return
 			}
 
