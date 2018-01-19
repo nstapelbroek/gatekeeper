@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"github.com/nstapelbroek/gatekeeper/domain/firewall"
+	"github.com/nstapelbroek/gatekeeper/adapters/vultr"
 )
 
 func PostOpen(res http.ResponseWriter, req *http.Request) {
@@ -23,6 +24,10 @@ func PostOpen(res http.ResponseWriter, req *http.Request) {
 		Port:      firewall.NewSinglePort(22),
 	}
 
-	res.Write([]byte(origin.To4().String()))
-	res.Write([]byte(rule.Direction.String()))
+	adapter := vultr.Adapter{
+		ApiKey:          "SomeKeyFromEnvironmentHere",
+		FireWallGroupId: "SomeGroupIdFromEnvironmentHere",
+	}
+
+	adapter.ProcessRule(rule)
 }
