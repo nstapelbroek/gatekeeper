@@ -102,8 +102,19 @@ func (adapter Adapter) createInboundRule(rule firewall.Rule) (err error) {
 func (adapter Adapter) deleteInboundRule(rule firewall.Rule) (err error) {
 	var ruleNumber int
 	ruleNumber, err = adapter.deterimeRuleNumber(rule)
+	if err != nil {
+		logrus.Warningln(err.Error())
+	}
 
-	fmt.Println(ruleNumber)
+	deleteRuleRequest := NewRuleDeleteRequest(adapter.ApiKey, adapter.FireWallGroupId, ruleNumber)
+	statusCode, _, err := adapter.doRequest(deleteRuleRequest.request)
+	if err != nil {
+		return
+	}
+
+	if statusCode != http.StatusOK {
+		return errors.New("response code is not the expected 200 value")
+	}
 
 	return
 }
