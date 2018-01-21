@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"fmt"
 	"io/ioutil"
-	"encoding/json"
 	"errors"
 	"github.com/Sirupsen/logrus"
+	"encoding/json"
+	"strings"
 )
 
 type Adapter struct {
@@ -29,47 +30,111 @@ func (adapter Adapter) dissectSingleRule(rule firewall.Rule) (ipType string, sub
 	return
 }
 
-func (adapter Adapter) ProcessRule(rule firewall.Rule) (err error) {
+func (adapter Adapter) validateRule(rule firewall.Rule) (err error) {
 	if !rule.Port.IsSinglePort() {
-		panic("cannot create port-ranges yet for Vultr Adapter")
-		return
+		return errors.New("unable to process port-ranges in the Vultr Adapter right now")
 	}
 
 	if rule.Direction.IsOutbound() {
-		panic("cannot create outbound rule for Vultr Adapter")
-		return
+		return errors.New("cannot create or remove outbound rule's in the Vultr Firewall")
 	}
 
-	return adapter.addInboundRule(rule)
+	return
 }
 
-func (adapter Adapter) addInboundRule(rule firewall.Rule) (err error) {
-	ipType, subnetSize, subnet := adapter.dissectSingleRule(rule)
-	ruleRequest := NewRuleCreateRequest(adapter.ApiKey, adapter.FireWallGroupId, ipType, rule.Protocol.String(), subnet, subnetSize, rule.Port.String())
+func (adapter Adapter) CreateRule(rule firewall.Rule) (err error) {
+	err = adapter.validateRule(rule)
+	if err != nil {
+		return err
+	}
 
-	response, err := http.DefaultClient.Do(ruleRequest.request)
+	return adapter.createInboundRule(rule)
+}
+
+func (adapter Adapter) DeleteRule(rule firewall.Rule) (err error) {
+	err = adapter.validateRule(rule)
+	if err != nil {
+		return err
+	}
+
+	return adapter.deleteInboundRule(rule)
+}
+
+func (adapter Adapter) doRequest(request *http.Request) (statusCode int, responseBody []byte, err error) {
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return
 	}
 
 	defer response.Body.Close()
-	responseBody, err := ioutil.ReadAll(response.Body)
+	statusCode = response.StatusCode
+	responseBody, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		return
 	}
 
-	logrus.Debugln(fmt.Sprintf("Response code: '%d', body: '%s'", response.StatusCode, responseBody))
+	logrus.Debugln(fmt.Sprintf("Response code: '%d', body: '%s'", statusCode, responseBody))
 
-	// If the rule is already added we can skip further processing, there should be a timer ready for deletion
-	if response.StatusCode == 412 && string(responseBody) == "Unable to add rule: This rule is already defined" {
+	return
+}
+
+func (adapter Adapter) createInboundRule(rule firewall.Rule) (err error) {
+	ipType, subnetSize, subnet := adapter.dissectSingleRule(rule)
+	ruleRequest := NewRuleCreateRequest(adapter.ApiKey, adapter.FireWallGroupId, ipType, rule.Protocol.String(), subnet, subnetSize, rule.Port.String())
+	statusCode, responseBody, err := adapter.doRequest(ruleRequest.request)
+	if err != nil {
+		return
+	}
+
+	if statusCode == http.StatusPreconditionFailed && string(responseBody) == "Unable to add rule: This rule is already defined" {
+		// Functionally the request succeeded, trigger a warning due to potential state issues
+		logrus.Warnln(fmt.Sprintf("Tried adding rule for %s on port %s but it was already defined", subnet, rule.Port.String()))
 		return nil
 	}
 
-	if response.StatusCode != 200 {
-		return errors.New("response code is the expected 200 value")
+	if statusCode != http.StatusOK {
+		return errors.New("response code is not the expected 200 value")
 	}
 
-	deserializedResponse := RuleCreateResponse{}
-	err = json.Unmarshal(responseBody, &deserializedResponse)
+	return nil
+}
+
+func (adapter Adapter) deleteInboundRule(rule firewall.Rule) (err error) {
+	var ruleNumber int
+	ruleNumber, err = adapter.deterimeRuleNumber(rule)
+
+	fmt.Println(ruleNumber)
+
 	return
+}
+
+// deterimeRuleNumber Vultr requires a rule-number for deletion, we fetch all the rules to verify remote config state
+func (adapter Adapter) deterimeRuleNumber(localRule firewall.Rule) (ruleNumber int, err error) {
+	ipType, _, _ := adapter.dissectSingleRule(localRule)
+	listRulesRequest := NewRuleListRequest(adapter.ApiKey, adapter.FireWallGroupId, ipType)
+	statusCode, responseBody, err := adapter.doRequest(listRulesRequest.request)
+	if err != nil {
+		return
+	}
+
+	if statusCode != http.StatusOK {
+		return ruleNumber, errors.New("response code is not the expected 200 value")
+	}
+
+	deserializedResponse := RuleListResponse{}
+	err = json.Unmarshal(responseBody, &deserializedResponse)
+	if err != nil {
+		return
+	}
+
+	for _, externalRule := range deserializedResponse {
+		if externalRule.Protocol == strings.ToLower(localRule.Protocol.String()) &&
+			externalRule.Subnet == localRule.IP.String() &&
+			externalRule.Port == localRule.Port.String() {
+			ruleNumber = externalRule.RuleNumber
+			return
+		}
+	}
+
+	return ruleNumber, errors.New("failed resolving correct rule_number at firewall configuration")
 }

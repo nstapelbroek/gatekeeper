@@ -29,5 +29,6 @@ func PostOpen(res http.ResponseWriter, req *http.Request) {
 		FireWallGroupId: "SomeGroupIdFromEnvironmentHere",
 	}
 
-	adapter.ProcessRule(rule)
+	adapter.CreateRule(rule)
+	adapter.DeleteRule(rule)
 }
