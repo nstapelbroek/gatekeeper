@@ -3,16 +3,25 @@ package controllers
 import (
 	"net"
 	"net/http"
-	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 	"time"
 	"github.com/nstapelbroek/gatekeeper/adapters"
+	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 )
 
-type GateController struct {
-	AdapterFactory *adapters.AdapterFactory
+type gateController struct {
+	adapterFactory *adapters.AdapterFactory
+	timeout        int
 }
 
-func (handler GateController) PostOpen(res http.ResponseWriter, req *http.Request) {
+func NewGateController(factory *adapters.AdapterFactory, timeout int) *gateController {
+	h := new(gateController)
+	h.adapterFactory = factory
+	h.timeout = timeout
+
+	return h
+}
+
+func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Request) {
 	contextOrigin := req.Context().Value("origin")
 	origin, assertionSuceeded := contextOrigin.(net.IP)
 	if !assertionSuceeded {
@@ -29,7 +38,7 @@ func (handler GateController) PostOpen(res http.ResponseWriter, req *http.Reques
 		Port:      firewall.NewSinglePort(22),
 	}
 
-	adapter := handler.AdapterFactory.GetAdapter()
+	adapter := handler.adapterFactory.GetAdapter()
 	err := adapter.CreateRule(rule)
 	if err != nil {
 		res.Write([]byte(err.Error()))

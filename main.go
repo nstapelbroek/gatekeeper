@@ -22,6 +22,7 @@ func newConfig() (*viper.Viper, error) {
 	c.SetDefault("http_auth_password", "password")
 	c.SetDefault("resolve_type", "RemoteAddr")
 	c.SetDefault("resolve_header", "X-Forwarded-For")
+	c.SetDefault("closure_timeout", 300)
 
 	c.AutomaticEnv()
 

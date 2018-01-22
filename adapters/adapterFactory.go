@@ -6,14 +6,21 @@ import (
 )
 
 type AdapterFactory struct {
-	Config *viper.Viper
+	config *viper.Viper
+}
+
+func NewAdapterFactory(config *viper.Viper) *AdapterFactory {
+	f := new(AdapterFactory)
+	f.config = config
+
+	return f
 }
 
 func (c AdapterFactory) GetAdapter() (a Adapter) {
 	// currently, the only adapter implemented is Vultr so we'll return that one
 	a = vultr.Adapter{
-		ApiKey:          c.Config.GetString("vultr_api_key"),
-		FireWallGroupId: c.Config.GetString("vultr_firewall_group_id"),
+		ApiKey:          c.config.GetString("vultr_api_key"),
+		FireWallGroupId: c.config.GetString("vultr_firewall_group_id"),
 	}
 
 	return

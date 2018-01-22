@@ -35,7 +35,10 @@ func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 
 func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
-	handler := controllers.GateController{AdapterFactory: &adapters.AdapterFactory{Config: app.config}}
+	handler := controllers.NewGateController(
+		adapters.NewAdapterFactory(app.config),
+		app.config.GetInt("closure_timeout"),
+	)
 
 	router.Handle("/", http.HandlerFunc(handler.PostOpen)).Methods("POST")
 
