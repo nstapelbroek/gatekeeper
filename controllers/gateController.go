@@ -1,13 +1,18 @@
-package handlers
+package controllers
 
 import (
 	"net"
 	"net/http"
 	"github.com/nstapelbroek/gatekeeper/domain/firewall"
-	"github.com/nstapelbroek/gatekeeper/adapters/vultr"
+	"time"
+	"github.com/nstapelbroek/gatekeeper/adapters"
 )
 
-func PostOpen(res http.ResponseWriter, req *http.Request) {
+type GateController struct {
+	AdapterFactory *adapters.AdapterFactory
+}
+
+func (handler GateController) PostOpen(res http.ResponseWriter, req *http.Request) {
 	contextOrigin := req.Context().Value("origin")
 	origin, assertionSuceeded := contextOrigin.(net.IP)
 	if !assertionSuceeded {
@@ -24,11 +29,15 @@ func PostOpen(res http.ResponseWriter, req *http.Request) {
 		Port:      firewall.NewSinglePort(22),
 	}
 
-	adapter := vultr.Adapter{
-		ApiKey:          "SomeKeyFromEnvironmentHere",
-		FireWallGroupId: "SomeGroupIdFromEnvironmentHere",
+	adapter := handler.AdapterFactory.GetAdapter()
+	err := adapter.CreateRule(rule)
+	if err != nil {
+		res.Write([]byte(err.Error()))
 	}
 
-	adapter.CreateRule(rule)
-	adapter.DeleteRule(rule)
+	timer := time.NewTimer(time.Second * 10)
+	go func() {
+		<-timer.C
+		adapter.DeleteRule(rule)
+	}()
 }
