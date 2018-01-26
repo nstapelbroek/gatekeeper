@@ -12,11 +12,19 @@ import (
 )
 
 type Adapter struct {
-	ApiKey          string
-	FireWallGroupId string
+	apiKey          string
+	firewallGroupID string
 }
 
-func (adapter Adapter) dissectSingleRule(rule firewall.Rule) (ipType string, subnetSize string, subnet string) {
+func NewVultrAdapter(apiKey string, firewallGroupID string) *Adapter {
+	a := new(Adapter)
+	a.apiKey = apiKey
+	a.firewallGroupID = firewallGroupID
+
+	return a
+}
+
+func (adapter *Adapter) dissectSingleRule(rule firewall.Rule) (ipType string, subnetSize string, subnet string) {
 	ipType = "v6"
 	subnetSize = "128"
 	subnet = rule.IP.To16().String()
@@ -30,7 +38,7 @@ func (adapter Adapter) dissectSingleRule(rule firewall.Rule) (ipType string, sub
 	return
 }
 
-func (adapter Adapter) validateRule(rule firewall.Rule) (err error) {
+func (adapter *Adapter) validateRule(rule firewall.Rule) (err error) {
 	if !rule.Port.IsSinglePort() {
 		return errors.New("unable to process port-ranges in the Vultr Adapter right now")
 	}
@@ -42,7 +50,7 @@ func (adapter Adapter) validateRule(rule firewall.Rule) (err error) {
 	return
 }
 
-func (adapter Adapter) CreateRule(rule firewall.Rule) (err error) {
+func (adapter *Adapter) CreateRule(rule firewall.Rule) (err error) {
 	err = adapter.validateRule(rule)
 	if err != nil {
 		return err
@@ -51,7 +59,7 @@ func (adapter Adapter) CreateRule(rule firewall.Rule) (err error) {
 	return adapter.createInboundRule(rule)
 }
 
-func (adapter Adapter) DeleteRule(rule firewall.Rule) (err error) {
+func (adapter *Adapter) DeleteRule(rule firewall.Rule) (err error) {
 	err = adapter.validateRule(rule)
 	if err != nil {
 		return err
@@ -60,7 +68,7 @@ func (adapter Adapter) DeleteRule(rule firewall.Rule) (err error) {
 	return adapter.deleteInboundRule(rule)
 }
 
-func (adapter Adapter) doRequest(request *http.Request) (statusCode int, responseBody []byte, err error) {
+func (adapter *Adapter) doRequest(request *http.Request) (statusCode int, responseBody []byte, err error) {
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return
@@ -78,9 +86,9 @@ func (adapter Adapter) doRequest(request *http.Request) (statusCode int, respons
 	return
 }
 
-func (adapter Adapter) createInboundRule(rule firewall.Rule) (err error) {
+func (adapter *Adapter) createInboundRule(rule firewall.Rule) (err error) {
 	ipType, subnetSize, subnet := adapter.dissectSingleRule(rule)
-	ruleRequest := NewRuleCreateRequest(adapter.ApiKey, adapter.FireWallGroupId, ipType, rule.Protocol.String(), subnet, subnetSize, rule.Port.String())
+	ruleRequest := NewRuleCreateRequest(adapter.apiKey, adapter.firewallGroupID, ipType, rule.Protocol.String(), subnet, subnetSize, rule.Port.String())
 	statusCode, responseBody, err := adapter.doRequest(ruleRequest.request)
 	if err != nil {
 		return
@@ -99,14 +107,14 @@ func (adapter Adapter) createInboundRule(rule firewall.Rule) (err error) {
 	return nil
 }
 
-func (adapter Adapter) deleteInboundRule(rule firewall.Rule) (err error) {
+func (adapter *Adapter) deleteInboundRule(rule firewall.Rule) (err error) {
 	var ruleNumber int
 	ruleNumber, err = adapter.deterimeRuleNumber(rule)
 	if err != nil {
 		logrus.Warningln(err.Error())
 	}
 
-	deleteRuleRequest := NewRuleDeleteRequest(adapter.ApiKey, adapter.FireWallGroupId, ruleNumber)
+	deleteRuleRequest := NewRuleDeleteRequest(adapter.apiKey, adapter.firewallGroupID, ruleNumber)
 	statusCode, _, err := adapter.doRequest(deleteRuleRequest.request)
 	if err != nil {
 		return
@@ -120,9 +128,9 @@ func (adapter Adapter) deleteInboundRule(rule firewall.Rule) (err error) {
 }
 
 // deterimeRuleNumber Vultr requires a rule-number for deletion, we fetch all the rules to verify remote config state
-func (adapter Adapter) deterimeRuleNumber(localRule firewall.Rule) (ruleNumber int, err error) {
+func (adapter *Adapter) deterimeRuleNumber(localRule firewall.Rule) (ruleNumber int, err error) {
 	ipType, _, _ := adapter.dissectSingleRule(localRule)
-	listRulesRequest := NewRuleListRequest(adapter.ApiKey, adapter.FireWallGroupId, ipType)
+	listRulesRequest := NewRuleListRequest(adapter.apiKey, adapter.firewallGroupID, ipType)
 	statusCode, responseBody, err := adapter.doRequest(listRulesRequest.request)
 	if err != nil {
 		return
