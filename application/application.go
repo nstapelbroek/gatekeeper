@@ -5,9 +5,10 @@ import (
 
 	"github.com/carbocation/interpose"
 	gorilla_mux "github.com/gorilla/mux"
-	"github.com/nstapelbroek/gatekeeper/handlers"
-	"github.com/nstapelbroek/gatekeeper/middlewares"
 	"github.com/spf13/viper"
+	"github.com/nstapelbroek/gatekeeper/adapters"
+	"github.com/nstapelbroek/gatekeeper/middlewares"
+	"github.com/nstapelbroek/gatekeeper/controllers"
 )
 
 // New is the constructor for Application struct.
@@ -34,8 +35,12 @@ func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 
 func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
+	handler := controllers.NewGateController(
+		adapters.NewAdapterFactory(app.config),
+		app.config.GetInt("closure_timeout"),
+	)
 
-	router.Handle("/", http.HandlerFunc(handlers.PostOpen)).Methods("POST")
+	router.Handle("/", http.HandlerFunc(handler.PostOpen)).Methods("POST")
 
 	// Due to the first-match approach of Gorilla mux, we serve the static files last
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
