@@ -6,6 +6,7 @@ import (
 	"time"
 	"github.com/nstapelbroek/gatekeeper/adapters"
 	"github.com/nstapelbroek/gatekeeper/domain/firewall"
+	"github.com/nstapelbroek/gatekeeper/middlewares"
 )
 
 type gateController struct {
@@ -23,9 +24,9 @@ func NewGateController(factory *adapters.AdapterFactory, timeout int) *gateContr
 }
 
 func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Request) {
-	contextOrigin := req.Context().Value("origin")
-	origin, assertionSuceeded := contextOrigin.(net.IP)
-	if !assertionSuceeded {
+	contextOrigin := req.Context().Value(middlewares.OriginContextKey)
+	origin, assertionSucceeded := contextOrigin.(net.IP)
+	if !assertionSucceeded {
 		panic("context origin was somehow not the expected net.IP type")
 	}
 
