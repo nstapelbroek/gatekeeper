@@ -101,7 +101,7 @@ func (adapter *Adapter) createInboundRule(rule firewall.Rule) (err error) {
 	}
 
 	if statusCode != http.StatusOK {
-		return errors.New("response code is not the expected 200 value")
+		return errors.New("the Vultr api responded with an unexpected HTTP status code")
 	}
 
 	return nil
@@ -121,7 +121,7 @@ func (adapter *Adapter) deleteInboundRule(rule firewall.Rule) (err error) {
 	}
 
 	if statusCode != http.StatusOK {
-		return errors.New("response code is not the expected 200 value")
+		return errors.New("the Vultr api responded with an unexpected HTTP status code")
 	}
 
 	return
@@ -137,7 +137,7 @@ func (adapter *Adapter) deterimeRuleNumber(localRule firewall.Rule) (ruleNumber 
 	}
 
 	if statusCode != http.StatusOK {
-		return ruleNumber, errors.New("response code is not the expected 200 value")
+		return ruleNumber, errors.New("the Vultr api responded with an unexpected HTTP status code")
 	}
 
 	deserializedResponse := RuleListResponse{}
@@ -155,5 +155,5 @@ func (adapter *Adapter) deterimeRuleNumber(localRule firewall.Rule) (ruleNumber 
 		}
 	}
 
-	return ruleNumber, errors.New("failed resolving correct rule_number at firewall configuration")
+	return ruleNumber, errors.New("failed resolving correct rule_number at your current vultr configuration")
 }

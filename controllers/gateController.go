@@ -41,7 +41,9 @@ func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Reques
 	adapter := handler.adapterFactory.GetAdapter()
 	err := adapter.CreateRule(rule)
 	if err != nil {
-		res.Write([]byte(err.Error()))
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte("Failed whitelisting, reason: " + err.Error()))
+		return
 	}
 
 	timer := time.NewTimer(time.Second * 120)
@@ -49,4 +51,7 @@ func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Reques
 		<-timer.C
 		adapter.DeleteRule(rule)
 	}()
+
+	res.WriteHeader(http.StatusCreated)
+	res.Write([]byte(origin.String() + " has been whitelisted for 120 seconds"))
 }
