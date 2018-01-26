@@ -44,7 +44,7 @@ func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Reques
 		res.Write([]byte(err.Error()))
 	}
 
-	timer := time.NewTimer(time.Second * 10)
+	timer := time.NewTimer(time.Second * 120)
 	go func() {
 		<-timer.C
 		adapter.DeleteRule(rule)
