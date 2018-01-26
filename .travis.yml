@@ -5,8 +5,10 @@ services:
 
 install:
   - go get ./...
+  - go get -u github.com/golang/lint/golint
 
 script:
+  - golint -set_exit_status ./...
   - go test ./...
   - make build TAGNAME=$(printenv TRAVIS_BRANCH)
   - make run TAGNAME=$(printenv TRAVIS_BRANCH)
