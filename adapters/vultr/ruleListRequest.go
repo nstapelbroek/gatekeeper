@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// RuleListRequest is a request wrapper that requests an overview of firewall rules at Vultr
 type RuleListRequest struct {
 	request         *http.Request
 	firewallGroupId string
@@ -13,6 +14,7 @@ type RuleListRequest struct {
 	ipType          string
 }
 
+// NewRuleListRequest will create and configure an instance of RuleListRequest
 func NewRuleListRequest(ApiKey string, FirewallGroupId string, IPType string) *RuleListRequest {
 	r := new(RuleListRequest)
 	r.firewallGroupId = FirewallGroupId

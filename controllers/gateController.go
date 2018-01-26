@@ -13,6 +13,7 @@ type gateController struct {
 	timeout        int
 }
 
+// NewGateController is an constructor for building gateController instances
 func NewGateController(factory *adapters.AdapterFactory, timeout int) *gateController {
 	h := new(gateController)
 	h.adapterFactory = factory

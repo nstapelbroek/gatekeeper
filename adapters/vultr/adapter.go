@@ -16,6 +16,7 @@ type adapter struct {
 	firewallGroupID string
 }
 
+// NewVultrAdapter will create a new Vultr adapter object, an unexported type.
 func NewVultrAdapter(apiKey string, firewallGroupID string) *adapter {
 	a := new(adapter)
 	a.apiKey = apiKey

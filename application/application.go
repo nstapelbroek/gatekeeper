@@ -24,6 +24,7 @@ type Application struct {
 	config *viper.Viper
 }
 
+// MiddlewareStruct is used for bootstrapping and loading the interpose middleware in mux
 func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 	middle := interpose.New()
 	middle.Use(middlewares.MustAuthenticate(app.config))
