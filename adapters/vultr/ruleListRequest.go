@@ -26,7 +26,7 @@ func NewRuleListRequest(ApiKey string, FirewallGroupId string, IPType string) *R
 	return r
 }
 
-func (r RuleListRequest) getQueryString() string {
+func (r *RuleListRequest) getQueryString() string {
 	return fmt.Sprintf(
 		"FIREWALLGROUPID=%s&direction=%s&ip_type=%s",
 		r.firewallGroupId,

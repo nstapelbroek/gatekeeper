@@ -25,7 +25,7 @@ func NewRuleDeleteRequest(ApiKey string, FirewallGroupId string, RuleNumber int)
 	return r
 }
 
-func (r RuleDeleteRequest) getBodyString() string {
+func (r *RuleDeleteRequest) getBodyString() string {
 	return fmt.Sprintf(
 		"FIREWALLGROUPID=%s&rulenumber=%d",
 		r.firewallGroupId,

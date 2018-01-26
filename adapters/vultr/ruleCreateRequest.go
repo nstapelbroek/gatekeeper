@@ -35,7 +35,7 @@ func NewRuleCreateRequest(ApiKey string, FirewallGroupId string, IPType string, 
 	return r
 }
 
-func (r RuleCreateRequest) getBodyString() string {
+func (r *RuleCreateRequest) getBodyString() string {
 	return fmt.Sprintf(
 		"FIREWALLGROUPID=%s&direction=in&ip_type=%s&protocol=%s&subnet_size=%s&subnet=%s&port=%s",
 		r.firewallGroupId,

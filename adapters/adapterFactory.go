@@ -18,10 +18,8 @@ func NewAdapterFactory(config *viper.Viper) *AdapterFactory {
 
 func (c AdapterFactory) GetAdapter() (a Adapter) {
 	// currently, the only adapter implemented is Vultr so we'll return that one
-	a = vultr.Adapter{
-		ApiKey:          c.config.GetString("vultr_api_key"),
-		FireWallGroupId: c.config.GetString("vultr_firewall_group_id"),
-	}
-
-	return
+	return vultr.NewVultrAdapter(
+		c.config.GetString("vultr_api_key"),
+		c.config.GetString("vultr_firewall_group_id"),
+	)
 }
