@@ -1,0 +1,23 @@
+language: go
+
+services:
+  - docker
+
+install:
+  - go get ./...
+  - go get -u github.com/golang/lint/golint
+
+script:
+  - golint -set_exit_status -min_confidence=0.9 ./...
+  - go test ./...
+  - make build TAGNAME=$(printenv TRAVIS_BRANCH)
+  - make run TAGNAME=$(printenv TRAVIS_BRANCH)
+  - sleep 2
+  - "curl -X POST http://localhost:8888 -H 'Authorization: Basic dXNlcjpwYXNzd29yZA==' | grep 'Failed whitelisting'"
+
+after_success:
+  - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+      docker login -u="nstapelbroekbot" -p="$DOCKERHUB_PASSWORD";
+      docker tag nstapelbroek/gatekeeper:$TRAVIS_BRANCH docker.io/nstapelbroek/gatekeeper:$TRAVIS_BRANCH;
+      docker push docker.io/nstapelbroek/gatekeeper;
+    fi

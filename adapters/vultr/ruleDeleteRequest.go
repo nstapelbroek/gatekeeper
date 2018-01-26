@@ -6,12 +6,14 @@ import (
 	"strings"
 )
 
+// RuleDeleteRequest is a request wrapper that will delete an existing firewall-rule at Vultr
 type RuleDeleteRequest struct {
 	request         *http.Request
 	firewallGroupId string
 	ruleNumber      int
 }
 
+// NewRuleDeleteRequest will create and configure an instance of RuleDeleteRequest
 func NewRuleDeleteRequest(ApiKey string, FirewallGroupId string, RuleNumber int) *RuleDeleteRequest {
 	r := new(RuleDeleteRequest)
 	r.firewallGroupId = FirewallGroupId

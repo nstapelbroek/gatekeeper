@@ -6,6 +6,7 @@ import (
 	"time"
 	"github.com/nstapelbroek/gatekeeper/adapters"
 	"github.com/nstapelbroek/gatekeeper/domain/firewall"
+	"github.com/nstapelbroek/gatekeeper/middlewares"
 )
 
 type gateController struct {
@@ -13,6 +14,7 @@ type gateController struct {
 	timeout        int
 }
 
+// NewGateController is an constructor for building gateController instances
 func NewGateController(factory *adapters.AdapterFactory, timeout int) *gateController {
 	h := new(gateController)
 	h.adapterFactory = factory
@@ -22,9 +24,9 @@ func NewGateController(factory *adapters.AdapterFactory, timeout int) *gateContr
 }
 
 func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Request) {
-	contextOrigin := req.Context().Value("origin")
-	origin, assertionSuceeded := contextOrigin.(net.IP)
-	if !assertionSuceeded {
+	contextOrigin := req.Context().Value(middlewares.OriginContextKey)
+	origin, assertionSucceeded := contextOrigin.(net.IP)
+	if !assertionSucceeded {
 		panic("context origin was somehow not the expected net.IP type")
 	}
 
@@ -41,7 +43,9 @@ func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Reques
 	adapter := handler.adapterFactory.GetAdapter()
 	err := adapter.CreateRule(rule)
 	if err != nil {
-		res.Write([]byte(err.Error()))
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte("Failed whitelisting, reason: " + err.Error()))
+		return
 	}
 
 	timer := time.NewTimer(time.Second * 120)
@@ -49,4 +53,7 @@ func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Reques
 		<-timer.C
 		adapter.DeleteRule(rule)
 	}()
+
+	res.WriteHeader(http.StatusCreated)
+	res.Write([]byte(origin.String() + " has been whitelisted for 120 seconds"))
 }

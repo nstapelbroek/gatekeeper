@@ -1,9 +1,8 @@
-// Package libhttp provides http related library functions.
+// Package lib provides http related library functions.
 package lib
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -40,18 +39,4 @@ func BasicAuthUnauthorized(w http.ResponseWriter, err error) {
 
 	w.Header().Set("WWW-Authenticate", "Basic realm=\""+BasicRealm+"\"")
 	http.Error(w, message, http.StatusUnauthorized)
-}
-
-// HandleErrorJson wraps error in JSON structure.
-func HandleErrorJson(w http.ResponseWriter, err error) {
-	var errMap map[string]string
-
-	if err == nil {
-		errMap = map[string]string{"Error": "Error struct is nil."}
-	} else {
-		errMap = map[string]string{"Error": err.Error()}
-	}
-
-	errJson, _ := json.Marshal(errMap)
-	http.Error(w, string(errJson), http.StatusInternalServerError)
 }

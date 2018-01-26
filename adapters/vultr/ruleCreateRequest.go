@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// RuleCreateRequest is a request wrapper that will create a new firewall-rule at Vultr
 type RuleCreateRequest struct {
 	request         *http.Request
 	firewallGroupId string
@@ -17,6 +18,7 @@ type RuleCreateRequest struct {
 	port            string
 }
 
+// NewRuleCreateRequest will create and configure an instance of RuleCreateRequest
 func NewRuleCreateRequest(ApiKey string, FirewallGroupId string, IPType string, Protocol string, Subnet string, SubnetSize string, Port string) *RuleCreateRequest {
 	r := new(RuleCreateRequest)
 	r.firewallGroupId = FirewallGroupId
