@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"net"
@@ -9,21 +9,21 @@ import (
 	"github.com/nstapelbroek/gatekeeper/middlewares"
 )
 
-type gateController struct {
+type gateHandler struct {
 	adapterFactory *adapters.AdapterFactory
 	timeout        int
 }
 
-// NewGateController is an constructor for building gateController instances
-func NewGateController(factory *adapters.AdapterFactory, timeout int) *gateController {
-	h := new(gateController)
+// NewGateHandler is an constructor for building gateHandler instances
+func NewGateHandler(factory *adapters.AdapterFactory, timeout int) *gateHandler {
+	h := new(gateHandler)
 	h.adapterFactory = factory
 	h.timeout = timeout
 
 	return h
 }
 
-func (handler gateController) PostOpen(res http.ResponseWriter, req *http.Request) {
+func (handler gateHandler) PostOpen(res http.ResponseWriter, req *http.Request) {
 	contextOrigin := req.Context().Value(middlewares.OriginContextKey)
 	origin, assertionSucceeded := contextOrigin.(net.IP)
 	if !assertionSucceeded {
