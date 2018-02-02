@@ -10,14 +10,14 @@ import (
 )
 
 type gateHandler struct {
-	adapterFactory *adapters.AdapterFactory
-	timeout        int
+	adapter adapters.Adapter
+	timeout int
 }
 
 // NewGateHandler is an constructor for building gateHandler instances
-func NewGateHandler(factory *adapters.AdapterFactory, timeout int) *gateHandler {
+func NewGateHandler(adapterInstance adapters.Adapter, timeout int) *gateHandler {
 	h := new(gateHandler)
-	h.adapterFactory = factory
+	h.adapter = adapterInstance
 	h.timeout = timeout
 
 	return h
@@ -40,8 +40,7 @@ func (handler gateHandler) PostOpen(res http.ResponseWriter, req *http.Request) 
 		Port:      firewall.NewSinglePort(22),
 	}
 
-	adapter := handler.adapterFactory.GetAdapter()
-	err := adapter.CreateRule(rule)
+	err := handler.adapter.CreateRule(rule)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte("Failed whitelisting, reason: " + err.Error()))
@@ -51,7 +50,7 @@ func (handler gateHandler) PostOpen(res http.ResponseWriter, req *http.Request) 
 	timer := time.NewTimer(time.Second * 120)
 	go func() {
 		<-timer.C
-		adapter.DeleteRule(rule)
+		handler.adapter.DeleteRule(rule)
 	}()
 
 	res.WriteHeader(http.StatusCreated)

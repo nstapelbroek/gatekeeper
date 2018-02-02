@@ -36,8 +36,9 @@ func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 
 func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
+	adapterFactory := adapters.NewAdapterFactory(app.config)
 	handler := handlers.NewGateHandler(
-		adapters.NewAdapterFactory(app.config),
+		adapterFactory.GetAdapter(),
 		app.config.GetInt("closure_timeout"),
 	)
 
