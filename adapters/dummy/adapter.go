@@ -6,6 +6,7 @@ import (
 
 type adapter struct{}
 
+// NewDummyAdapter will create a new dummy adapter object for testing purposes.
 func NewDummyAdapter() *adapter {
 	a := new(adapter)
 	return a
