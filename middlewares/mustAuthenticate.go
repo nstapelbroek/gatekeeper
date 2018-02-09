@@ -23,7 +23,7 @@ func MustAuthenticate(config *viper.Viper) func(http.Handler) http.Handler {
 
 			correctUsername := []byte(config.GetString("http_auth_username"))
 			correctPassword := []byte(config.GetString("http_auth_password"))
-			if subtle.ConstantTimeCompare(correctUsername, []byte(username)) == 0 && subtle.ConstantTimeCompare(correctPassword, []byte(password)) == 0 {
+			if subtle.ConstantTimeCompare(correctUsername, []byte(username)) == 0 || subtle.ConstantTimeCompare(correctPassword, []byte(password)) == 0 {
 				lib.BasicAuthUnauthorized(res, errors.New("Username or password does not match"))
 				return
 			}
