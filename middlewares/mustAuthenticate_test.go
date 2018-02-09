@@ -6,6 +6,8 @@ import (
 	"testing"
 	"github.com/spf13/viper"
 	"encoding/base64"
+	"github.com/Sirupsen/logrus"
+	"io/ioutil"
 )
 
 func basicAuth(username, password string) string {
@@ -13,7 +15,10 @@ func basicAuth(username, password string) string {
 	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
-func getTestSubject() func(handler http.Handler) http.Handler {
+func getTestSubjectMustAuthenticate() func(handler http.Handler) http.Handler {
+	// Disable logrus
+	logrus.SetOutput(ioutil.Discard)
+
 	c := viper.New()
 	c.SetDefault("http_auth_username", "user")
 	c.SetDefault("http_auth_password", "password")
@@ -31,7 +36,7 @@ func TestMustAuthenticateWithWrongPassword(t *testing.T) {
 		t.Errorf("Internal handler got called instead of returning an unauthorized response")
 	})
 
-	middleWare := getTestSubject()
+	middleWare := getTestSubjectMustAuthenticate()
 	rr := httptest.NewRecorder()
 	handler := middleWare(testHandler)
 	handler.ServeHTTP(rr, req)
@@ -52,7 +57,7 @@ func TestMustAuthenticateWithWrongUsername(t *testing.T) {
 		t.Errorf("Internal handler got called instead of returning an unauthorized response")
 	})
 
-	middleWare := getTestSubject()
+	middleWare := getTestSubjectMustAuthenticate()
 	rr := httptest.NewRecorder()
 	handler := middleWare(testHandler)
 	handler.ServeHTTP(rr, req)
@@ -73,7 +78,7 @@ func TestMustAuthenticateWithWrongUsernameAndPassword(t *testing.T) {
 		t.Errorf("Internal handler got called instead of returning an unauthorized response")
 	})
 
-	middleWare := getTestSubject()
+	middleWare := getTestSubjectMustAuthenticate()
 	rr := httptest.NewRecorder()
 	handler := middleWare(testHandler)
 	handler.ServeHTTP(rr, req)
@@ -93,7 +98,7 @@ func TestMustAuthenticateWithoutAuthenticationHeader(t *testing.T) {
 		t.Errorf("Internal handler got called instead of returning an unauthorized response")
 	})
 
-	middleWare := getTestSubject()
+	middleWare := getTestSubjectMustAuthenticate()
 	rr := httptest.NewRecorder()
 	handler := middleWare(testHandler)
 	handler.ServeHTTP(rr, req)
@@ -113,7 +118,7 @@ func TestSuccessFullAuthentication(t *testing.T) {
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	})
 
-	middleWare := getTestSubject()
+	middleWare := getTestSubjectMustAuthenticate()
 	rr := httptest.NewRecorder()
 	handler := middleWare(testHandler)
 	handler.ServeHTTP(rr, req)
