@@ -52,9 +52,8 @@ func ResolveOrigin(config *viper.Viper) func(http.Handler) http.Handler {
 				return
 			}
 
-			req = req.WithContext(context.WithValue(req.Context(), OriginContextKey, originIP))
-
-			next.ServeHTTP(res, req)
+			ctx := context.WithValue(req.Context(), OriginContextKey, originIP)
+			next.ServeHTTP(res, req.WithContext(ctx))
 		})
 	}
 }

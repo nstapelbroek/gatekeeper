@@ -9,6 +9,8 @@ import (
 
 	"github.com/nstapelbroek/gatekeeper/lib"
 	"github.com/spf13/viper"
+	"github.com/Sirupsen/logrus"
+	"fmt"
 )
 
 // MustAuthenticate Enforces HTTP basic auth on a request and will respond early if the credentials do not match
@@ -23,7 +25,8 @@ func MustAuthenticate(config *viper.Viper) func(http.Handler) http.Handler {
 
 			correctUsername := []byte(config.GetString("http_auth_username"))
 			correctPassword := []byte(config.GetString("http_auth_password"))
-			if subtle.ConstantTimeCompare(correctUsername, []byte(username)) == 0 && subtle.ConstantTimeCompare(correctPassword, []byte(password)) == 0 {
+			if subtle.ConstantTimeCompare(correctUsername, []byte(username)) == 0 || subtle.ConstantTimeCompare(correctPassword, []byte(password)) == 0 {
+				logrus.Debugln(fmt.Sprintf("Authentication attempt failed, terminating request"))
 				lib.BasicAuthUnauthorized(res, errors.New("Username or password does not match"))
 				return
 			}

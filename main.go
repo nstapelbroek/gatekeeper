@@ -14,7 +14,7 @@ import (
 
 func newConfig() (*viper.Viper, error) {
 	c := viper.New()
-	c.SetDefault("http_addr", ":8888")
+	c.SetDefault("http_port", "8080")
 	c.SetDefault("http_cert_file", "")
 	c.SetDefault("http_key_file", "")
 	c.SetDefault("http_drain_interval", "1s")
@@ -54,7 +54,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	serverAddress := config.Get("http_addr").(string)
+	serverAddress := ":" + config.GetString("http_port")
 
 	certFile := config.Get("http_cert_file").(string)
 	keyFile := config.Get("http_key_file").(string)

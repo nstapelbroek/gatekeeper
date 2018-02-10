@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/nstapelbroek/gatekeeper/adapters"
 	"github.com/nstapelbroek/gatekeeper/middlewares"
-	"github.com/nstapelbroek/gatekeeper/controllers"
+	"github.com/nstapelbroek/gatekeeper/handlers"
 )
 
 // New is the constructor for Application struct.
@@ -36,8 +36,9 @@ func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 
 func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
-	handler := controllers.NewGateController(
-		adapters.NewAdapterFactory(app.config),
+	adapterFactory := adapters.NewAdapterFactory(app.config)
+	handler := handlers.NewGateHandler(
+		adapterFactory.GetAdapter(),
 		app.config.GetInt("closure_timeout"),
 	)
 
