@@ -1,12 +1,13 @@
 package middlewares
 
 import (
-	"net/http/httptest"
-	"net/http"
-	"testing"
-	"github.com/spf13/viper"
 	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
 	"io/ioutil"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func getTestSubjectResolveOrigin(resolveType string) func(handler http.Handler) http.Handler {
@@ -39,34 +40,31 @@ func TestResolveFailedReturnsAServerError(t *testing.T) {
 	}
 }
 
-//func TestResolveOriginWithDefaultResolver(t *testing.T) {
-//	req, err := http.NewRequest(http.MethodPost, "/", nil)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	req.RemoteAddr = "123.123.123.123:12345"
-//
-//	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		contextOrigin := req.Context().Value(OriginContextKey)
-//		ip, assertionSucceeded := contextOrigin.(net.IP)
-//		if !assertionSucceeded {
-//			t.Errorf("Response context was not an instance of net.IP")
-//		}
-//
-//		// Must use variable
-//		ip.String()
-//	})
-//
-//	middleWare := getTestSubjectResolveOrigin("default")
-//	rr := httptest.NewRecorder()
-//	handler := middleWare(testHandler)
-//	handler.ServeHTTP(rr, req)
-//
-//	if status := rr.Code; status != http.StatusOK {
-//		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-//	}
-//}
+func TestResolveOriginWithDefaultResolver(t *testing.T) {
+	req, err := http.NewRequest(http.MethodPost, "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.RemoteAddr = "123.123.123.123:12345"
+
+	testHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		contextOrigin := req.Context().Value(OriginContextKey)
+		_, assertionSucceeded := contextOrigin.(net.IP)
+		if !assertionSucceeded {
+			t.Errorf("Response context was not an instance of net.IP")
+		}
+	})
+
+	middleWare := getTestSubjectResolveOrigin("default")
+	rr := httptest.NewRecorder()
+	handler := middleWare(testHandler)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+}
 
 func TestResolveOriginWithDefaultResolverToLocalAddress(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, "/", nil)
