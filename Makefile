@@ -16,4 +16,4 @@ test:
 
 run:
 	if [ "$(TAGNAME)" = "UNDEF" ]; then echo "please provide a valid TAGNAME" && exit 1; fi
-	docker run --rm --name gatekeeper-run -p 8888:8888 -d $(PROJECTNAME):$(TAGNAME_CLEAN)
+	docker run --rm --name gatekeeper-run -p 8080:8080 -d $(PROJECTNAME):$(TAGNAME_CLEAN)

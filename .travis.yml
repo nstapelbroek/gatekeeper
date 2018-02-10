@@ -13,7 +13,7 @@ script:
   - make build TAGNAME=$(printenv TRAVIS_BRANCH)
   - make run TAGNAME=$(printenv TRAVIS_BRANCH)
   - sleep 2
-  - "curl -X POST http://localhost:8888 -H 'Authorization: Basic dXNlcjpwYXNzd29yZA==' | grep 'Failed whitelisting'"
+  - "curl -X POST http://localhost:8080 -H 'Authorization: Basic dXNlcjpwYXNzd29yZA==' | grep 'Failed whitelisting'"
 
 after_success:
   - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
