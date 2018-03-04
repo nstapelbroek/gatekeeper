@@ -3,6 +3,7 @@
 PROJECTNAME=nstapelbroek/gatekeeper
 TAGNAME=UNDEF
 TAGNAME_CLEAN:=$(subst /,-,$(TAGNAME))
+PROJECT_PACKAGES=$(shell go list ./... | grep -v vendor)
 
 build:
 	if [ "$(TAGNAME)" = "UNDEF" ]; then echo "please provide a valid TAGNAME" && exit 1; fi
@@ -11,8 +12,8 @@ build:
 	rm gatekeeper
 
 test:
-	golint -set_exit_status -min_confidence=0.9 ./...
-	go test ./...
+	golint -set_exit_status -min_confidence=0.9 $(PROJECT_PACKAGES)
+	go test $(PROJECT_PACKAGES)
 
 run:
 	if [ "$(TAGNAME)" = "UNDEF" ]; then echo "please provide a valid TAGNAME" && exit 1; fi
