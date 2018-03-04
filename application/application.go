@@ -39,7 +39,7 @@ func (app *Application) mux() *gorilla_mux.Router {
 	adapterFactory := adapters.NewAdapterFactory(app.config)
 	handler := handlers.NewGateHandler(
 		adapterFactory.GetAdapter(),
-		app.config.GetInt("closure_timeout"),
+		app.config.GetInt("rule_close_timeout"),
 	)
 
 	router.Handle("/", http.HandlerFunc(handler.PostOpen)).Methods("POST")

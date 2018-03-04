@@ -7,7 +7,7 @@ Temporary allow access to your cloud infrastructure by authenticating at the gat
 ### Environments
 | Provider   | Supported status | Required Environment Variables |
 |---	|---	|---    |
-| Vultr | Partially supported, no port-ranges and the white list lasts for a hardcoded amount of 120 seconds |`VULTR_API_KEY`, `VULTR_FIREWALL_GROUP_ID`|
+| Vultr | Partially supported, no configurable port or port-ranges |`VULTR_API_KEY`, `VULTR_FIREWALL_GROUP_ID`|
 | Digitalocean | In development | None yet |
 
 ## Getting Started
