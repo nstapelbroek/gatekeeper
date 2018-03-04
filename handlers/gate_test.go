@@ -26,7 +26,7 @@ func prepareRequest(t *testing.T) *http.Request {
 func TestGateOpenHandler(t *testing.T) {
 	req := prepareRequest(t)
 	adapterInstance := dummy.NewDummyAdapter()
-	gateHandler := NewGateHandler(adapterInstance, 1)
+	gateHandler := NewGateHandler(adapterInstance, 2)
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(gateHandler.PostOpen)
@@ -36,7 +36,7 @@ func TestGateOpenHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
 	}
 
-	expected := `127.0.0.1 has been whitelisted for 120 seconds`
+	expected := `127.0.0.1 has been whitelisted for 2 seconds`
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v", rr.Body.String(), expected)
 	}

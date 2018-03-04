@@ -7,6 +7,7 @@ import (
 	"github.com/nstapelbroek/gatekeeper/adapters"
 	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 	"github.com/nstapelbroek/gatekeeper/middlewares"
+	"fmt"
 )
 
 type gateHandler struct {
@@ -47,12 +48,12 @@ func (handler gateHandler) PostOpen(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	timer := time.NewTimer(time.Second * 120)
+	timer := time.NewTimer(time.Duration(handler.timeout))
 	go func() {
 		<-timer.C
 		handler.adapter.DeleteRule(rule)
 	}()
 
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(origin.String() + " has been whitelisted for 120 seconds"))
+	res.Write([]byte(fmt.Sprintf("%s has been whitelisted for %d seconds", origin.String(), handler.timeout)))
 }
