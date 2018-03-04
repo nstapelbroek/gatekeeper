@@ -11,7 +11,7 @@ build:
 	rm gatekeeper
 
 test:
-	golint -set_exit_status -min_confidence=0.9 ./...
+	golint -set_exit_status -min_confidence=0.9 $(go list ./... | grep -v /vendor/)
 	go test ./...
 
 run:
