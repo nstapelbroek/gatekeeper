@@ -55,10 +55,9 @@ func main() {
 	}
 
 	serverAddress := ":" + config.GetString("http_port")
-
-	certFile := config.Get("http_cert_file").(string)
-	keyFile := config.Get("http_key_file").(string)
-	drainIntervalString := config.Get("http_drain_interval").(string)
+	certFile := config.GetString("http_cert_file")
+	keyFile := config.GetString("http_key_file")
+	drainIntervalString := config.GetString("http_drain_interval")
 
 	drainInterval, err := time.ParseDuration(drainIntervalString)
 	if err != nil {
