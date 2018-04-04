@@ -12,13 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type contextKey int
-
-// OriginContextKey will be used as the key of the request context where the client's IP is stored
-const (
-	OriginContextKey contextKey = iota
-)
-
 // ResolveOrigin Enforces HTTP basic auth on a request and will respond early if the credentials do not match
 func ResolveOrigin(config *viper.Viper) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
