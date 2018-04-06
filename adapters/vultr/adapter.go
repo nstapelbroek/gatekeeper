@@ -1,13 +1,13 @@
 package vultr
 
 import (
-	"github.com/nstapelbroek/gatekeeper/domain/firewall"
-	"net/http"
-	"fmt"
-	"io/ioutil"
-	"errors"
-	"github.com/Sirupsen/logrus"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/Sirupsen/logrus"
+	"github.com/nstapelbroek/gatekeeper/domain/firewall"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
@@ -82,7 +82,7 @@ func (adapter *adapter) doRequest(request *http.Request) (statusCode int, respon
 		return
 	}
 
-	logrus.Debugln(fmt.Sprintf("Response code: '%d', body: '%s'", statusCode, responseBody))
+	logrus.Debugln(fmt.Sprintf("External Response code: '%d', body: '%s'", statusCode, responseBody))
 
 	return
 }
