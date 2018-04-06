@@ -26,7 +26,7 @@ func prepareRequest(t *testing.T) *http.Request {
 func TestGateOpenHandler(t *testing.T) {
 	req := prepareRequest(t)
 	adapterInstance := dummy.NewDummyAdapter()
-	gateHandler := NewGateHandler(adapterInstance, 2)
+	gateHandler := NewGateHandler(adapterInstance, 2, "")
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(gateHandler.PostOpen)

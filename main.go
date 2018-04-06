@@ -23,6 +23,7 @@ func newConfig() (*viper.Viper, error) {
 	c.SetDefault("resolve_type", "RemoteAddr")
 	c.SetDefault("resolve_header", "X-Forwarded-For")
 	c.SetDefault("rule_close_timeout", 120)
+	c.SetDefault("rule_ports", "TCP:22")
 
 	c.AutomaticEnv()
 

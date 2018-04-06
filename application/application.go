@@ -5,10 +5,10 @@ import (
 
 	"github.com/carbocation/interpose"
 	gorilla_mux "github.com/gorilla/mux"
-	"github.com/spf13/viper"
 	"github.com/nstapelbroek/gatekeeper/adapters"
-	"github.com/nstapelbroek/gatekeeper/middlewares"
 	"github.com/nstapelbroek/gatekeeper/handlers"
+	"github.com/nstapelbroek/gatekeeper/middlewares"
+	"github.com/spf13/viper"
 )
 
 // New is the constructor for Application struct.
@@ -40,6 +40,7 @@ func (app *Application) mux() *gorilla_mux.Router {
 	handler := handlers.NewGateHandler(
 		adapterFactory.GetAdapter(),
 		app.config.GetInt("rule_close_timeout"),
+		app.config.GetString("rule_ports"),
 	)
 
 	router.Handle("/", http.HandlerFunc(handler.PostOpen)).Methods("POST")

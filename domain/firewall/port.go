@@ -3,6 +3,7 @@ package firewall
 import (
 	"errors"
 	"strconv"
+	"strings"
 )
 
 // ErrStartHigherThanEnd is a constant used for saving the error that could occur when an invalid port number is selection
@@ -17,7 +18,7 @@ type PortRange struct {
 }
 
 // NewSinglePort is a constructor for a PortRange with only one port
-func NewSinglePort(portnumber int) (PortRange) {
+func NewSinglePort(portnumber int) PortRange {
 	var p PortRange
 	p.beginPort = portnumber
 	p.endPort = portnumber
@@ -37,6 +38,20 @@ func NewPortRange(startPort int, endPort int) (PortRange, error) {
 	p.endPort = endPort
 
 	return p, nil
+}
+
+func NewPortFromString(port string) (PortRange, error) {
+	if !strings.Contains(port, "-") {
+		port, err := strconv.ParseInt(port, 10, 0)
+
+		return NewSinglePort(int(port)), err
+	}
+
+	portSlices := strings.Split(port, "-")
+	startPort, _ := strconv.ParseInt(portSlices[0], 10, 0)
+	endPort, _ := strconv.ParseInt(portSlices[1], 10, 0)
+
+	return NewPortRange(int(startPort), int(endPort))
 }
 
 // IsSinglePort will evaluate if the PortRange contains a single port value

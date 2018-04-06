@@ -1,25 +1,27 @@
 package handlers
 
 import (
+	"fmt"
+	"github.com/nstapelbroek/gatekeeper/adapters"
+	"github.com/nstapelbroek/gatekeeper/lib"
+	"github.com/nstapelbroek/gatekeeper/middlewares"
 	"net"
 	"net/http"
 	"time"
-	"github.com/nstapelbroek/gatekeeper/adapters"
-	"github.com/nstapelbroek/gatekeeper/domain/firewall"
-	"github.com/nstapelbroek/gatekeeper/middlewares"
-	"fmt"
 )
 
 type gateHandler struct {
-	adapter adapters.Adapter
-	timeout int
+	adapter    adapters.Adapter
+	timeout    int
+	portConfig string
 }
 
 // NewGateHandler is an constructor for building gateHandler instances
-func NewGateHandler(adapterInstance adapters.Adapter, timeout int) *gateHandler {
+func NewGateHandler(adapterInstance adapters.Adapter, timeout int, portConfig string) *gateHandler {
 	h := new(gateHandler)
 	h.adapter = adapterInstance
 	h.timeout = timeout
+	h.portConfig = portConfig
 
 	return h
 }
@@ -31,28 +33,23 @@ func (handler gateHandler) PostOpen(res http.ResponseWriter, req *http.Request) 
 		panic("context origin was somehow not the expected net.IP type")
 	}
 
-	direction, _ := firewall.NewDirectionFromString("inbound")
-	protocol, _ := firewall.NewProtocolFromString("TCP")
+	timeOutInSeconds := int(time.Second) * handler.timeout
+	rules := lib.CreateRules(handler.portConfig, origin)
 
-	rule := firewall.Rule{
-		Direction: direction,
-		Protocol:  protocol,
-		IP:        origin,
-		Port:      firewall.NewSinglePort(22),
+	for _, rule := range rules {
+		err := handler.adapter.CreateRule(rule)
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write([]byte("Failed whitelisting, reason: " + err.Error()))
+			return
+		}
+
+		timer := time.NewTimer(time.Duration(timeOutInSeconds))
+		go func() {
+			<-timer.C
+			handler.adapter.DeleteRule(rule)
+		}()
 	}
-
-	err := handler.adapter.CreateRule(rule)
-	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		res.Write([]byte("Failed whitelisting, reason: " + err.Error()))
-		return
-	}
-
-	timer := time.NewTimer(time.Duration(handler.timeout))
-	go func() {
-		<-timer.C
-		handler.adapter.DeleteRule(rule)
-	}()
 
 	res.WriteHeader(http.StatusCreated)
 	res.Write([]byte(fmt.Sprintf("%s has been whitelisted for %d seconds", origin.String(), handler.timeout)))
