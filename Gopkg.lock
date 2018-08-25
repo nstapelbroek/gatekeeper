@@ -2,37 +2,48 @@
 
 
 [[projects]]
+  digest = "1:3fcbf733a8d810a21265a7f2fe08a3353db2407da052b233f8b204b5afc03d9b"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  pruneopts = ""
+  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
+  version = "v1.0.6"
 
 [[projects]]
   branch = "master"
+  digest = "1:37367becee639602ed33d6ba9a9f9ce2bfdc3a5b94b5c21825eea677324e3c1e"
   name = "github.com/carbocation/interpose"
   packages = ["."]
+  pruneopts = ""
   revision = "723534742ba3bbda66268b735aaa41634468acc6"
 
 [[projects]]
+  digest = "1:eb53021a8aa3f599d29c7102e65026242bdedce998a54837dc67f14b6a97c5fd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
+  pruneopts = ""
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
 
 [[projects]]
+  digest = "1:20ed7daa9b3b38b6d1d39b48ab3fd31122be5419461470d0c28de3e121c93ecf"
   name = "github.com/gorilla/context"
   packages = ["."]
+  pruneopts = ""
   revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
   version = "v1.1"
 
 [[projects]]
+  digest = "1:aa016bbb412f496a7baed9e02787a60cd15c9a3edfa72da9c4a95d6cea610334"
   name = "github.com/gorilla/mux"
   packages = ["."]
+  pruneopts = ""
   revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
   version = "v1.6.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:147d671753effde6d3bcd58fc74c1d67d740196c84c280c762a5417319499972"
   name = "github.com/hashicorp/hcl"
   packages = [
     ".",
@@ -43,83 +54,107 @@
     "hcl/token",
     "json/parser",
     "json/scanner",
-    "json/token"
+    "json/token",
   ]
+  pruneopts = ""
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
+  digest = "1:d244eb7b2d8e9f4c9355d215d65159c176603874ba10bfb7cbe6dcbd212813f5"
   name = "github.com/magiconair/properties"
   packages = ["."]
+  pruneopts = ""
   revision = "c3beff4c2358b44d0493c7dda585e7db7ff28ae6"
   version = "v1.7.6"
 
 [[projects]]
   branch = "master"
+  digest = "1:59fa50d593e5673a0dfffa1852b66fd700c05b35e368680b4b89a68fdb2c1379"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
+  pruneopts = ""
   revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
 
 [[projects]]
+  digest = "1:d60cfeee185019d4fcd35e8c89c83aff576e4723b6100300bf67b05be961388f"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
+  pruneopts = ""
   revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:dae0d7dd55563fd389e7263a32d2030022ef29cceff941336e53f6520e0308c0"
   name = "github.com/spf13/afero"
   packages = [
     ".",
-    "mem"
+    "mem",
   ]
+  pruneopts = ""
   revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
   version = "v1.0.2"
 
 [[projects]]
+  digest = "1:d0b38ba6da419a6d4380700218eeec8623841d44a856bb57369c172fbf692ab4"
   name = "github.com/spf13/cast"
   packages = ["."]
+  pruneopts = ""
   revision = "8965335b8c7107321228e3e3702cab9832751bac"
   version = "v1.2.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:104517520aab91164020ab6524a5d6b7cafc641b2e42ac6236f6ac1deac4f66a"
   name = "github.com/spf13/jwalterweatherman"
   packages = ["."]
+  pruneopts = ""
   revision = "7c0cea34c8ece3fbeb2b27ab9b59511d360fb394"
 
 [[projects]]
+  digest = "1:261bc565833ef4f02121450d74eb88d5ae4bd74bfe5d0e862cddb8550ec35000"
   name = "github.com/spf13/pflag"
   packages = ["."]
+  pruneopts = ""
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:59354ad53dfe6ed1b941844cb029cd37c0377598eec3a0d49c03aee2375ef9c4"
   name = "github.com/spf13/viper"
   packages = ["."]
+  pruneopts = ""
   revision = "25b30aa063fc18e48662b86996252eabdcf2f0c7"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:8143ea52154df4cf52589d780ad447f625978a4c29713200842ccaa7c532350a"
   name = "github.com/tylerb/graceful"
   packages = ["."]
+  pruneopts = ""
   revision = "4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb"
   version = "v1.2.15"
 
 [[projects]]
   branch = "master"
+  digest = "1:79b763a59bc081a752605854f75ac04d4b8fba22bab9bbb11689efd2de255864"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
+  pruneopts = ""
   revision = "91a49db82a88618983a78a06c1cbd4e00ab749ab"
 
 [[projects]]
   branch = "master"
+  digest = "1:0a0c73aced706c77f4f128971976b0ee94db7bdcc95b6088bda9e72594598634"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = ""
   revision = "dd2ff4accc098aceecb86b36eaa7829b2a17b1c9"
 
 [[projects]]
+  digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
   name = "golang.org/x/text"
   packages = [
     "internal/gen",
@@ -127,20 +162,55 @@
     "internal/ucd",
     "transform",
     "unicode/cldr",
-    "unicode/norm"
+    "unicode/norm",
   ]
+  pruneopts = ""
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
+  digest = "1:5fe876313b07628905b2181e537faabe45032cb9c79c01b49b51c25a0a40040d"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = ""
   revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
   version = "v2.1.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "289e0f65604d7085038add1621e0f300e6b497ecab1beee99b544007c527c1e5"
+  input-imports = [
+    "github.com/Sirupsen/logrus",
+    "github.com/carbocation/interpose",
+    "github.com/fsnotify/fsnotify",
+    "github.com/gorilla/context",
+    "github.com/gorilla/mux",
+    "github.com/hashicorp/hcl",
+    "github.com/hashicorp/hcl/hcl/ast",
+    "github.com/hashicorp/hcl/hcl/parser",
+    "github.com/hashicorp/hcl/hcl/scanner",
+    "github.com/hashicorp/hcl/hcl/strconv",
+    "github.com/hashicorp/hcl/hcl/token",
+    "github.com/hashicorp/hcl/json/parser",
+    "github.com/hashicorp/hcl/json/scanner",
+    "github.com/hashicorp/hcl/json/token",
+    "github.com/magiconair/properties",
+    "github.com/mitchellh/mapstructure",
+    "github.com/pelletier/go-toml",
+    "github.com/spf13/afero",
+    "github.com/spf13/afero/mem",
+    "github.com/spf13/cast",
+    "github.com/spf13/jwalterweatherman",
+    "github.com/spf13/pflag",
+    "github.com/spf13/viper",
+    "github.com/tylerb/graceful",
+    "golang.org/x/crypto/ssh/terminal",
+    "golang.org/x/sys/unix",
+    "golang.org/x/sys/windows",
+    "golang.org/x/text/transform",
+    "golang.org/x/text/unicode/cldr",
+    "golang.org/x/text/unicode/norm",
+    "gopkg.in/yaml.v2",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
