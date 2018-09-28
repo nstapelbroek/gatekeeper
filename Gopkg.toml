@@ -3,7 +3,7 @@
 
 [[constraint]]
   name = "github.com/Sirupsen/logrus"
-  version = "1.0.4"
+  version = "1.0.6"
 
 [[constraint]]
   branch = "master"
@@ -11,11 +11,11 @@
 
 [[constraint]]
   name = "github.com/gorilla/mux"
-  version = "1.6.1"
+  version = "1.6.2"
 
 [[constraint]]
   name = "github.com/spf13/viper"
-  version = "1.0.0"
+  version = "1.2.0"
 
 [[constraint]]
   name = "github.com/tylerb/graceful"
