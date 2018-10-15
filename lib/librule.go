@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// CreateRules maps a configuration string of ports and an net.ip to a slice of Rules
 func CreateRules(portConfig string, origin net.IP) []firewall.Rule {
 	portsAndProtocols := strings.Split(portConfig, ",")
 	rules := make([]firewall.Rule, len(portsAndProtocols))
