@@ -40,6 +40,7 @@ func NewPortRange(startPort int, endPort int) (PortRange, error) {
 	return p, nil
 }
 
+// NewPortFromString creates a portRange struct from an input string
 func NewPortFromString(port string) (PortRange, error) {
 	if !strings.Contains(port, "-") {
 		port, err := strconv.ParseInt(port, 10, 0)
