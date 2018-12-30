@@ -1,84 +1,83 @@
 package main
 
 import (
-	"flag"
-	"net/http"
-	"time"
-
-	"github.com/Sirupsen/logrus"
+	"github.com/gin-gonic/gin"
+	"github.com/nstapelbroek/gatekeeper/adapters"
+	"github.com/nstapelbroek/gatekeeper/handlers"
+	"github.com/nstapelbroek/gatekeeper/middlewares"
 	"github.com/spf13/viper"
-	"github.com/tylerb/graceful"
-
-	"github.com/nstapelbroek/gatekeeper/application"
 )
 
-func newConfig() (*viper.Viper, error) {
+func newConfig() *viper.Viper {
 	c := viper.New()
+	// Generic settings
 	c.SetDefault("http_port", "8080")
-	c.SetDefault("http_cert_file", "")
-	c.SetDefault("http_key_file", "")
-	c.SetDefault("http_drain_interval", "1s")
-	c.SetDefault("http_auth_username", "user")
-	c.SetDefault("http_auth_password", "password")
+	c.SetDefault("http_auth_username", "")
+	c.SetDefault("http_auth_password", "")
 	c.SetDefault("resolve_type", "RemoteAddr")
 	c.SetDefault("resolve_header", "X-Forwarded-For")
 	c.SetDefault("rule_close_timeout", 120)
 	c.SetDefault("rule_ports", "TCP:22")
 
+	// Adapter specific
+	c.SetDefault("vultr_api_key", "")
+	c.SetDefault("vultr_firewall_id", "")
+
 	c.AutomaticEnv()
 
-	return c, nil
+	return c
+}
+
+func registerBasicAuth(app *gin.Engine, config *viper.Viper) {
+	username := config.GetString("http_auth_username")
+	password := config.GetString("http_auth_password")
+	if len(username) > 0 || len(password) > 0 {
+		app.Use(gin.BasicAuth(gin.Accounts{username: password}))
+	}
+}
+
+func registerResolver(app *gin.Engine, config *viper.Viper) {
+	switch resolveType := config.GetString("resolve_type"); resolveType {
+	case "headers":
+		app.Use(middlewares.OriginFromHeader(config.GetString("resolve_header")))
+	case "body":
+		app.Use(middlewares.OriginFromBody())
+	case "remote":
+	default:
+		app.Use(middlewares.OriginFromRemoteAddr())
+	}
+}
+
+func registerRoutes(app *gin.Engine, config *viper.Viper) {
+	adapterFactory := adapters.NewAdapterFactory(config)
+	gateHandler := handlers.NewGateHandler(
+		adapterFactory.GetAdapter(),
+		config.GetInt("rule_close_timeout"),
+		config.GetString("rule_ports"),
+	)
+
+	// Normal routes
+	app.POST("/", gateHandler.PostOpen)
+
+	// Error handling and helper routes
+	app.Handle("GET", "/", handlers.MethodNotAllowed)
+	app.Handle("PATCH", "/", handlers.MethodNotAllowed)
+	app.Handle("PUT", "/", handlers.MethodNotAllowed)
+	app.Handle("DELETE", "/", handlers.MethodNotAllowed)
+	app.Handle("HEAD", "/", handlers.MethodNotAllowed)
+	app.Handle("OPTIONS", "/", handlers.MethodNotAllowed)
+	app.Handle("CONNECT", "/", handlers.MethodNotAllowed)
+	app.Handle("TRACE", "/", handlers.MethodNotAllowed)
+	app.NoRoute(handlers.NotFound)
 }
 
 func main() {
-	config, err := newConfig()
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	config := newConfig()
+	app := gin.Default()
 
-	app, err := application.New(config)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	registerBasicAuth(app, config)
+	registerResolver(app, config)
+	registerRoutes(app, config)
 
-	logParameter := flag.String("log-level", "info", "determine the verbosity of the logger")
-	flag.Parse()
-	logLevel, err := logrus.ParseLevel(*logParameter)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	logrus.SetLevel(logLevel)
-
-	middle, err := app.MiddlewareStruct()
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	serverAddress := ":" + config.GetString("http_port")
-	certFile := config.GetString("http_cert_file")
-	keyFile := config.GetString("http_key_file")
-	drainIntervalString := config.GetString("http_drain_interval")
-
-	drainInterval, err := time.ParseDuration(drainIntervalString)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	srv := &graceful.Server{
-		Timeout: drainInterval,
-		Server:  &http.Server{Addr: serverAddress, Handler: middle},
-	}
-
-	logrus.Infoln("Running HTTP server on " + serverAddress)
-
-	if certFile != "" && keyFile != "" {
-		err = srv.ListenAndServeTLS(certFile, keyFile)
-	} else {
-		err = srv.ListenAndServe()
-	}
-
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	app.Run(":" + config.GetString("http_port"))
 }

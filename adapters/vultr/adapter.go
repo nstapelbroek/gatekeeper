@@ -3,8 +3,6 @@ package vultr
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/Sirupsen/logrus"
 	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 	"io/ioutil"
 	"net/http"
@@ -82,7 +80,7 @@ func (adapter *adapter) doRequest(request *http.Request) (statusCode int, respon
 		return
 	}
 
-	logrus.Debugln(fmt.Sprintf("External Response code: '%d', body: '%s'", statusCode, responseBody))
+	//logrus.Debugln(fmt.Sprintf("External Response code: '%d', body: '%s'", statusCode, responseBody))
 
 	return
 }
@@ -97,7 +95,7 @@ func (adapter *adapter) createInboundRule(rule firewall.Rule) (err error) {
 
 	if statusCode == http.StatusPreconditionFailed && string(responseBody) == "Unable to add rule: This rule is already defined" {
 		// Functionally the request succeeded, trigger a warning due to potential state issues
-		logrus.Warnln(fmt.Sprintf("Tried adding rule for %s on port %s but it was already defined", subnet, rule.Port.String()))
+		//logrus.Warnln(fmt.Sprintf("Tried adding rule for %s on port %s but it was already defined", subnet, rule.Port.String()))
 		return nil
 	}
 
@@ -112,7 +110,7 @@ func (adapter *adapter) deleteInboundRule(rule firewall.Rule) (err error) {
 	var ruleNumber int
 	ruleNumber, err = adapter.deterimeRuleNumber(rule)
 	if err != nil {
-		logrus.Warningln(err.Error())
+		//logrus.Warningln(err.Error())
 	}
 
 	deleteRuleRequest := NewRuleDeleteRequest(adapter.apiKey, adapter.firewallGroupID, ruleNumber)

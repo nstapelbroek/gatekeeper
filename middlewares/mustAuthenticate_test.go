@@ -1,13 +1,11 @@
 package middlewares
 
 import (
-	"net/http/httptest"
-	"net/http"
-	"testing"
-	"github.com/spf13/viper"
 	"encoding/base64"
-	"github.com/Sirupsen/logrus"
-	"io/ioutil"
+	"github.com/spf13/viper"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func basicAuth(username, password string) string {
@@ -17,7 +15,7 @@ func basicAuth(username, password string) string {
 
 func getTestSubjectMustAuthenticate() func(handler http.Handler) http.Handler {
 	// Disable logrus
-	logrus.SetOutput(ioutil.Discard)
+	//logrus.SetOutput(ioutil.Discard)
 
 	c := viper.New()
 	c.SetDefault("http_auth_username", "user")

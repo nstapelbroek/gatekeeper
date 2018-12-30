@@ -24,6 +24,6 @@ func (c AdapterFactory) GetAdapter() (a Adapter) {
 	// currently, the only adapter implemented is Vultr so we'll return that one
 	return vultr.NewVultrAdapter(
 		c.config.GetString("vultr_api_key"),
-		c.config.GetString("vultr_firewall_group_id"),
+		c.config.GetString("vultr_firewall_id"),
 	)
 }

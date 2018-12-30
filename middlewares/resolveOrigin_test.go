@@ -2,9 +2,7 @@ package middlewares
 
 import (
 	"bytes"
-	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +11,7 @@ import (
 
 func getTestSubjectResolveOrigin(resolveType string) func(handler http.Handler) http.Handler {
 	// Disable logrus
-	logrus.SetOutput(ioutil.Discard)
+	//logrus.SetOutput(ioutil.Discard)
 
 	c := viper.New()
 	c.SetDefault("resolve_type", resolveType)
@@ -86,7 +84,7 @@ func TestResolveOriginWithCustomHeaderResolver(t *testing.T) {
 	req.Header.Add("X-Real-IP", wantedIP)
 	testHandler := getHappyPathHandlerFunc(t)
 
-	logrus.SetOutput(ioutil.Discard)
+	//logrus.SetOutput(ioutil.Discard)
 	c := viper.New()
 	c.SetDefault("resolve_type", "headers")
 	c.SetDefault("resolve_header", "X-Real-IP")
