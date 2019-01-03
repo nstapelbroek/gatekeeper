@@ -18,4 +18,5 @@ func TestDefaultConfigValues(t *testing.T) {
 	assert.Equal(t, "X-Forwarded-For", config.GetString("resolve_header"))
 	assert.Equal(t, 120, config.GetInt("rule_close_timeout"))
 	assert.Equal(t, "TCP:22", config.GetString("rule_ports"))
+	assert.Equal(t, "release", config.GetString("app_env"))
 }

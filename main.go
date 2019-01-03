@@ -18,6 +18,7 @@ func newConfig() *viper.Viper {
 	c.SetDefault("resolve_header", "X-Forwarded-For")
 	c.SetDefault("rule_close_timeout", 120)
 	c.SetDefault("rule_ports", "TCP:22")
+	c.SetDefault("app_env", "release")
 
 	// Adapter specific
 	c.SetDefault("vultr_api_key", "")
@@ -73,6 +74,8 @@ func registerRoutes(app *gin.Engine, config *viper.Viper) {
 
 func main() {
 	config := newConfig()
+
+	gin.SetMode(config.GetString("app_env"))
 	app := gin.Default()
 
 	registerBasicAuth(app, config)
