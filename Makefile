@@ -12,9 +12,9 @@ build:
 	rm gatekeeper
 
 test:
-	golint -set_exit_status -min_confidence=0.9 $(PROJECT_PACKAGES)
-	go test $(PROJECT_PACKAGES)
+	golangci-lint run
+	go test ./...
 
 run:
 	if [ "$(TAGNAME)" = "UNDEF" ]; then echo "please provide a valid TAGNAME" && exit 1; fi
-	docker run --rm --name gatekeeper-run -p 8080:8080 -d $(PROJECTNAME):$(TAGNAME_CLEAN)
+	docker run --rm --name gatekeeper-run -p 8080:8080 -e VULTR_API_KEY=somekey -e VULTR_FIREWALL_GROUP=somegroup -d $(PROJECTNAME):$(TAGNAME_CLEAN)
