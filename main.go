@@ -79,5 +79,5 @@ func main() {
 	registerResolver(app, config)
 	registerRoutes(app, config)
 
-	app.Run(":" + config.GetString("http_port"))
+	_ = app.Run(":" + config.GetString("http_port"))
 }

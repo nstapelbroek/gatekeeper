@@ -13,7 +13,7 @@ func TestMethodNotAllowed(t *testing.T) {
 
 	assert.Equal(t, http.StatusMethodNotAllowed, response.Code)
 	assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("content-type"))
-	assert.Contains(t, string(response.Body.Bytes()), "HTTP verb not allowed")
+	assert.Contains(t, response.Body.String(), "HTTP verb not allowed")
 }
 
 func TestNotFound(t *testing.T) {
@@ -23,5 +23,5 @@ func TestNotFound(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, response.Code)
 	assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("content-type"))
-	assert.Contains(t, string(response.Body.Bytes()), "Page not found")
+	assert.Contains(t, response.Body.String(), "Page not found")
 }

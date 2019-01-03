@@ -110,7 +110,7 @@ func (adapter *adapter) deleteInboundRule(rule firewall.Rule) (err error) {
 	var ruleNumber int
 	ruleNumber, err = adapter.deterimeRuleNumber(rule)
 	if err != nil {
-		//logrus.Warningln(err.Error())
+		return
 	}
 
 	deleteRuleRequest := NewRuleDeleteRequest(adapter.apiKey, adapter.firewallGroupID, ruleNumber)
