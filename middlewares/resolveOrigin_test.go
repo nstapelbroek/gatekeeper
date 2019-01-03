@@ -2,182 +2,105 @@ package middlewares
 
 import (
 	"bytes"
-	"github.com/Sirupsen/logrus"
-	"github.com/spf13/viper"
-	"io/ioutil"
-	"net"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func getTestSubjectResolveOrigin(resolveType string) func(handler http.Handler) http.Handler {
-	// Disable logrus
-	logrus.SetOutput(ioutil.Discard)
-
-	c := viper.New()
-	c.SetDefault("resolve_type", resolveType)
-	c.SetDefault("resolve_header", "X-Forwarded-For")
-
-	return ResolveOrigin(c)
+func init() {
+	gin.SetMode(gin.TestMode)
 }
 
-const wantedIP = "123.123.123.123"
+func setupGin(middleWare gin.HandlerFunc) *gin.Engine {
+	app := gin.New()
+	app.Use(middleWare)
 
-// Happy paths
-func getHappyPathHandlerFunc(t *testing.T) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		contextOrigin := req.Context().Value(OriginContextKey)
-		ip, assertionSucceeded := contextOrigin.(net.IP)
-		if !assertionSucceeded {
-			t.Errorf("Response context was not an instance of net.IP")
-		}
-
-		if ip.String() != wantedIP {
-			t.Errorf("resolved IP was malformed got %v wanted %v", ip.String(), wantedIP)
-		}
-	})
-}
-
-func TestResolveOriginWithDefaultResolver(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	req.RemoteAddr = wantedIP + ":12345"
-	testHandler := getHappyPathHandlerFunc(t)
-
-	middleWare := getTestSubjectResolveOrigin("default")
-	rr := httptest.NewRecorder()
-	handler := middleWare(testHandler)
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
-}
-
-func TestResolveOriginWithHeaderResolver(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	req.Header.Add("X-Forwarded-For", wantedIP)
-	testHandler := getHappyPathHandlerFunc(t)
-
-	middleWare := getTestSubjectResolveOrigin("headers")
-	rr := httptest.NewRecorder()
-	handler := middleWare(testHandler)
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
-}
-
-func TestResolveOriginWithCustomHeaderResolver(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	req.Header.Add("X-Real-IP", wantedIP)
-	testHandler := getHappyPathHandlerFunc(t)
-
-	logrus.SetOutput(ioutil.Discard)
-	c := viper.New()
-	c.SetDefault("resolve_type", "headers")
-	c.SetDefault("resolve_header", "X-Real-IP")
-
-	middleWare := ResolveOrigin(c)
-	rr := httptest.NewRecorder()
-	handler := middleWare(testHandler)
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
-}
-
-func TestResolveOriginWithBodyResolver(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte(wantedIP)))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testHandler := getHappyPathHandlerFunc(t)
-
-	middleWare := getTestSubjectResolveOrigin("body")
-	rr := httptest.NewRecorder()
-	handler := middleWare(testHandler)
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
-}
-
-// Exceptionals
-func TestNoRemoteAddrWhenUsingDefaultResolver(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Errorf("Handler was called while the request should have been terminated")
+	app.POST("/", func(c *gin.Context) {
+		contextOrigin := c.GetString(OriginContextKey)
+		c.String(200, contextOrigin)
 	})
 
-	middleWare := getTestSubjectResolveOrigin("default")
-	rr := httptest.NewRecorder()
-	handler := middleWare(testHandler)
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusInternalServerError)
-	}
+	return app
 }
 
-func TestInvalidBodyUsingTheBodyResolver(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte("invalid ip")))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Errorf("Handler was called while the request should have been terminated")
-	})
-
-	middleWare := getTestSubjectResolveOrigin("body")
-	rr := httptest.NewRecorder()
-	handler := middleWare(testHandler)
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusInternalServerError)
-	}
+func performRequest(app http.Handler, request *http.Request) *httptest.ResponseRecorder {
+	response := httptest.NewRecorder()
+	app.ServeHTTP(response, request)
+	return response
 }
 
-func TestResolveOriginWithDefaultResolverToLocalAddress(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestOriginFromRemoteAddr(t *testing.T) {
+	assertionIp := "123.123.123.123"
+	middleware := OriginFromRemoteAddr()
+	app := setupGin(middleware)
+	request, _ := http.NewRequest("POST", "/", nil)
+	request.RemoteAddr = assertionIp + ":4567"
 
-	req.RemoteAddr = "127.0.0.1:12345"
+	response := performRequest(app, request)
 
-	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Errorf("Handler was called while the request should have been terminated")
-	})
+	assert.Equal(t, assertionIp, response.Body.String())
+}
 
-	middleWare := getTestSubjectResolveOrigin("default")
-	rr := httptest.NewRecorder()
-	handler := middleWare(testHandler)
-	handler.ServeHTTP(rr, req)
+func TestOriginFromBody(t *testing.T) {
+	assertionIp := "127.0.0.1"
+	middleware := OriginFromBody()
+	app := setupGin(middleware)
+	request, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte(assertionIp)))
 
-	if status := rr.Code; status != http.StatusUnprocessableEntity {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusUnprocessableEntity)
-	}
+	response := performRequest(app, request)
+
+	assert.Equal(t, assertionIp, response.Body.String())
+}
+
+func TestOriginFromHeader(t *testing.T) {
+	assertionIp := "123.123.123.123"
+	middleware := OriginFromHeader("x-forwarded-for")
+	app := setupGin(middleware)
+	request, _ := http.NewRequest("POST", "/", nil)
+	request.Header.Add("x-forwarded-for", assertionIp)
+
+	response := performRequest(app, request)
+
+	assert.Equal(t, assertionIp, response.Body.String())
+}
+
+func TestOriginFromHeaderCaseInsensitive(t *testing.T) {
+	assertionIp := "123.123.123.213"
+	middleware := OriginFromHeader("x-forwarded-for")
+	app := setupGin(middleware)
+	request, _ := http.NewRequest("POST", "/", nil)
+	request.Header.Add("X-FORWARDED-FOR", assertionIp)
+
+	response := performRequest(app, request)
+
+	assert.Equal(t, assertionIp, response.Body.String())
+}
+
+func TestOriginFromHeaderCustomHeader(t *testing.T) {
+	assertionIp := "13.37.13.37"
+	middleware := OriginFromHeader("some-header")
+	app := setupGin(middleware)
+	request, _ := http.NewRequest("POST", "/", nil)
+	request.Header.Add("some-header", assertionIp)
+
+	response := performRequest(app, request)
+
+	assert.Equal(t, assertionIp, response.Body.String())
+}
+
+// When receiving multiple headers the http library will return this first entry
+func TestOriginFromHeaderDuplicateHeader(t *testing.T) {
+	assertionIp := "12.3.4.9"
+	middleware := OriginFromHeader("x-forwarded-for")
+	app := setupGin(middleware)
+	request, _ := http.NewRequest("POST", "/", nil)
+	request.Header.Add("x-forwarded-for", assertionIp)
+	request.Header.Add("x-forwarded-for", "127.0.0.1")
+	request.Header.Add("x-forwarded-for", "10.0.0.2")
+
+	response := performRequest(app, request)
+
+	assert.Equal(t, assertionIp, response.Body.String())
 }

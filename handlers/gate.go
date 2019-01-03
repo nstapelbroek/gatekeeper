@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/nstapelbroek/gatekeeper/adapters"
+	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 	"github.com/nstapelbroek/gatekeeper/lib"
 	"github.com/nstapelbroek/gatekeeper/middlewares"
 	"net"
@@ -26,31 +28,32 @@ func NewGateHandler(adapterInstance adapters.Adapter, timeout int, portConfig st
 	return h
 }
 
-func (handler gateHandler) PostOpen(res http.ResponseWriter, req *http.Request) {
-	contextOrigin := req.Context().Value(middlewares.OriginContextKey)
-	origin, assertionSucceeded := contextOrigin.(net.IP)
-	if !assertionSucceeded {
-		panic("context origin was somehow not the expected net.IP type")
+func (handler gateHandler) PostOpen(c *gin.Context) {
+	contextOrigin := c.GetString(middlewares.OriginContextKey)
+	originIP := net.ParseIP(contextOrigin)
+
+	if originIP.IsLoopback() || originIP.IsLinkLocalUnicast() || originIP.IsLinkLocalMulticast() || originIP.IsLinkLocalUnicast() {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Local IP's cannot be whitelisted"})
+		return
 	}
 
 	timeOutInSeconds := int(time.Second) * handler.timeout
-	rules := lib.CreateRules(handler.portConfig, origin)
+	rules := lib.CreateRules(handler.portConfig, originIP)
 
 	for _, rule := range rules {
 		err := handler.adapter.CreateRule(rule)
 		if err != nil {
-			res.WriteHeader(http.StatusInternalServerError)
-			res.Write([]byte("Failed whitelisting, reason: " + err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
 		timer := time.NewTimer(time.Duration(timeOutInSeconds))
-		go func() {
+		go func(rule firewall.Rule) {
 			<-timer.C
-			handler.adapter.DeleteRule(rule)
-		}()
+			_ = handler.adapter.DeleteRule(rule)
+		}(rule)
 	}
 
-	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(fmt.Sprintf("%s has been whitelisted for %d seconds", origin.String(), handler.timeout)))
+	content := gin.H{"detail": fmt.Sprintf("%s has been whitelisted for %d seconds", originIP.String(), handler.timeout)}
+	c.JSON(http.StatusCreated, content)
 }

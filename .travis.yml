@@ -15,14 +15,15 @@ before_install:
 
 install:
   - dep ensure
+  - golangci-lint --version || curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.12.5
 
 script:
-  - golint -set_exit_status -min_confidence=0.9 $(go list ./... | grep -v /vendor/)
+  - golangci-lint run
   - go test ./...
   - make build TAGNAME=$(printenv TRAVIS_BRANCH)
   - make run TAGNAME=$(printenv TRAVIS_BRANCH)
   - sleep 2
-  - "curl -X POST http://localhost:8080 -H 'Authorization: Basic dXNlcjpwYXNzd29yZA==' | grep 'Failed whitelisting'"
+  - "curl -X POST http://localhost:8080 -H 'Authorization: Basic dXNlcjpwYXNzd29yZA==' | grep 'Vultr api responded'"
 
 after_success:
   - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then

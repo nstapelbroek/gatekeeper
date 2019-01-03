@@ -3,8 +3,6 @@ package vultr
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/Sirupsen/logrus"
 	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 	"io/ioutil"
 	"net/http"
@@ -17,12 +15,26 @@ type adapter struct {
 }
 
 // NewVultrAdapter will create a new Vultr adapter object, an unexported type.
-func NewVultrAdapter(apiKey string, firewallGroupID string) *adapter {
+func NewVultrAdapter(apiKey string, firewallGroupID string) (*adapter, error) {
 	a := new(adapter)
 	a.apiKey = apiKey
 	a.firewallGroupID = firewallGroupID
 
-	return a
+	if len(a.apiKey) == 0 {
+		return nil, ErrMissingConfigurationValue("Vultr api key")
+	}
+
+	if len(a.firewallGroupID) == 0 {
+		return nil, ErrMissingConfigurationValue("Vultr firewall group id")
+	}
+
+	return a, nil
+}
+
+type ErrMissingConfigurationValue string
+
+func (e ErrMissingConfigurationValue) Error() string {
+	return "Empty configuration value for " + string(e) + ", did you forget an environment variable?"
 }
 
 func (adapter *adapter) dissectSingleRule(rule firewall.Rule) (ipType string, subnetSize string, subnet string) {
@@ -82,7 +94,7 @@ func (adapter *adapter) doRequest(request *http.Request) (statusCode int, respon
 		return
 	}
 
-	logrus.Debugln(fmt.Sprintf("External Response code: '%d', body: '%s'", statusCode, responseBody))
+	//logrus.Debugln(fmt.Sprintf("External Response code: '%d', body: '%s'", statusCode, responseBody))
 
 	return
 }
@@ -97,7 +109,7 @@ func (adapter *adapter) createInboundRule(rule firewall.Rule) (err error) {
 
 	if statusCode == http.StatusPreconditionFailed && string(responseBody) == "Unable to add rule: This rule is already defined" {
 		// Functionally the request succeeded, trigger a warning due to potential state issues
-		logrus.Warnln(fmt.Sprintf("Tried adding rule for %s on port %s but it was already defined", subnet, rule.Port.String()))
+		//logrus.Warnln(fmt.Sprintf("Tried adding rule for %s on port %s but it was already defined", subnet, rule.Port.String()))
 		return nil
 	}
 
@@ -112,7 +124,7 @@ func (adapter *adapter) deleteInboundRule(rule firewall.Rule) (err error) {
 	var ruleNumber int
 	ruleNumber, err = adapter.deterimeRuleNumber(rule)
 	if err != nil {
-		logrus.Warningln(err.Error())
+		return
 	}
 
 	deleteRuleRequest := NewRuleDeleteRequest(adapter.apiKey, adapter.firewallGroupID, ruleNumber)

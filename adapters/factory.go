@@ -2,8 +2,8 @@
 package adapters
 
 import (
-	"github.com/spf13/viper"
 	"github.com/nstapelbroek/gatekeeper/adapters/vultr"
+	"github.com/spf13/viper"
 )
 
 // AdapterFactory forms a resolver that is responsible for transforming your configuration into adapter instances
@@ -22,8 +22,14 @@ func NewAdapterFactory(config *viper.Viper) *AdapterFactory {
 // GetAdapter will return a adapter implementation based on your environment setup
 func (c AdapterFactory) GetAdapter() (a Adapter) {
 	// currently, the only adapter implemented is Vultr so we'll return that one
-	return vultr.NewVultrAdapter(
+	a, err := vultr.NewVultrAdapter(
 		c.config.GetString("vultr_api_key"),
-		c.config.GetString("vultr_firewall_group_id"),
+		c.config.GetString("vultr_firewall_group"),
 	)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return
 }
