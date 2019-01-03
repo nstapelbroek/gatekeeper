@@ -15,12 +15,26 @@ type adapter struct {
 }
 
 // NewVultrAdapter will create a new Vultr adapter object, an unexported type.
-func NewVultrAdapter(apiKey string, firewallGroupID string) *adapter {
+func NewVultrAdapter(apiKey string, firewallGroupID string) (*adapter, error) {
 	a := new(adapter)
 	a.apiKey = apiKey
 	a.firewallGroupID = firewallGroupID
 
-	return a
+	if len(a.apiKey) == 0 {
+		return nil, ErrMissingConfigurationValue("Vultr api key")
+	}
+
+	if len(a.firewallGroupID) == 0 {
+		return nil, ErrMissingConfigurationValue("Vultr firewall group id")
+	}
+
+	return a, nil
+}
+
+type ErrMissingConfigurationValue string
+
+func (e ErrMissingConfigurationValue) Error() string {
+	return "Empty configuration value for " + string(e) + ", did you forget an environment variable?"
 }
 
 func (adapter *adapter) dissectSingleRule(rule firewall.Rule) (ipType string, subnetSize string, subnet string) {

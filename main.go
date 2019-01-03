@@ -21,7 +21,7 @@ func newConfig() *viper.Viper {
 
 	// Adapter specific
 	c.SetDefault("vultr_api_key", "")
-	c.SetDefault("vultr_firewall_id", "")
+	c.SetDefault("vultr_firewall_group", "")
 
 	c.AutomaticEnv()
 
