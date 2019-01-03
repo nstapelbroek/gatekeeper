@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/nstapelbroek/gatekeeper/adapters"
+	"github.com/nstapelbroek/gatekeeper/domain/firewall"
 	"github.com/nstapelbroek/gatekeeper/lib"
 	"github.com/nstapelbroek/gatekeeper/middlewares"
 	"net"
@@ -47,10 +48,10 @@ func (handler gateHandler) PostOpen(c *gin.Context) {
 		}
 
 		timer := time.NewTimer(time.Duration(timeOutInSeconds))
-		go func() {
+		go func(rule firewall.Rule) {
 			<-timer.C
-			handler.adapter.DeleteRule(rule)
-		}()
+			_ = handler.adapter.DeleteRule(rule)
+		}(rule)
 	}
 
 	content := gin.H{"detail": fmt.Sprintf("%s has been whitelisted for %d seconds", originIP.String(), handler.timeout)}
