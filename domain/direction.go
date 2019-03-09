@@ -1,8 +1,8 @@
-package firewall
+package domain
 
 import (
-	"strings"
 	"errors"
+	"strings"
 )
 
 // ErrInvalidDirectionString is a constant used for saving the error that could occur when an invalid direction is configured
@@ -15,7 +15,7 @@ type Direction int
 
 // Inbound is a constant value used in the Direction value object
 const (
-	Inbound  Direction = iota + 1
+	Inbound Direction = iota + 1
 	Outbound
 )
 

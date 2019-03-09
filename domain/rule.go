@@ -1,4 +1,4 @@
-package firewall
+package domain
 
 import (
 	"net"
@@ -8,6 +8,6 @@ import (
 type Rule struct {
 	Direction Direction
 	Protocol  Protocol
-	IP        net.IP
+	IPNet     net.IPNet
 	Port      PortRange
 }
