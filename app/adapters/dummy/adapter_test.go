@@ -7,12 +7,12 @@ import (
 )
 
 func getRule() domain.Rule {
-	protocol, _ := firewall.NewProtocolFromString("TCP")
-	direction, _ := firewall.NewDirectionFromString("inbound")
+	protocol, _ := domain.NewProtocolFromString("TCP")
+	direction, _ := domain.NewDirectionFromString("inbound")
 
 	r := domain.Rule{
-		IPNet:     net.ParseIP("127.0.0.1"),
-		Port:      firewall.NewSinglePort(22),
+		IPNet:     net.IPNet{IP: net.ParseIP("127.0.0.1"), Mask: net.CIDRMask(32, 32)},
+		Port:      domain.NewSinglePort(22),
 		Protocol:  protocol,
 		Direction: direction,
 	}
