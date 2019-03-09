@@ -31,8 +31,6 @@ func OriginFromBody() gin.HandlerFunc {
 		origin := string(buffer)
 		c.Set(OriginContextKey, origin)
 
-
 		c.Next()
 	}
 }
-
