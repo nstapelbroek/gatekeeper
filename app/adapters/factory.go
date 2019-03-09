@@ -2,7 +2,7 @@
 package adapters
 
 import (
-	"github.com/nstapelbroek/gatekeeper/adapters/vultr"
+	"github.com/nstapelbroek/gatekeeper/app/adapters/vultr"
 	"github.com/spf13/viper"
 )
 

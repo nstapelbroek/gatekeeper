@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"net"
 )
 
@@ -10,4 +11,15 @@ type Rule struct {
 	Protocol  Protocol
 	IPNet     net.IPNet
 	Port      PortRange
+}
+
+func (r Rule) String() string {
+	return fmt.Sprintf(
+		"Rule-%s-%s-%s-%s-%s",
+		r.Direction.String(),
+		r.Protocol.String(),
+		r.IPNet.IP.String(),
+		r.IPNet.Mask.String(),
+		r.Port.String(),
+	)
 }
