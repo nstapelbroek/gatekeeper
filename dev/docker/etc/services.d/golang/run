@@ -1,2 +1,0 @@
-#!/usr/bin/execlineb -P
-with-contenv s6-setuidgid golang /app/gatekeeper --log-level=debug
