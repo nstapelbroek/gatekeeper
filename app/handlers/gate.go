@@ -70,7 +70,12 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	}
 
 	if len(adapterErrors) > 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed applying some rules", "details": adapterErrors})
+		var details []string
+		for _, adapterError := range adapterErrors {
+			details = append(details, adapterError.Error())
+		}
+
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Failed applying some rules", "details": details})
 		return
 	}
 
