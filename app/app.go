@@ -41,6 +41,7 @@ func bootServices(a *App) {
 func bootRouter(a *App) {
 	gin.SetMode(a.config.GetString("app_env"))
 	a.router = gin.Default()
+	a.router.HandleMethodNotAllowed = true
 }
 
 func bootRoutes(a *App) {
@@ -57,12 +58,8 @@ func bootRoutes(a *App) {
 	}
 
 	a.router.POST("/", gateHandler.PostOpen)
-	a.router.Handle("GET", "/", handlers.MethodNotAllowed)
-	a.router.Handle("PATCH", "/", handlers.MethodNotAllowed)
-	a.router.Handle("PUT", "/", handlers.MethodNotAllowed)
-	a.router.Handle("HEAD", "/", handlers.MethodNotAllowed)
-	a.router.Handle("OPTIONS", "/", handlers.MethodNotAllowed)
 	a.router.NoRoute(handlers.NotFound)
+	a.router.NoMethod(handlers.MethodNotAllowed)
 }
 
 func (a App) Run() (err error) {
