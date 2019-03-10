@@ -16,4 +16,5 @@ LABEL org.label-schema.vcs-ref=$VCS_REF \
 RUN apk add --no-cache ca-certificates
 COPY --from=build-env /go/src/github.com/nstapelbroek/gatekeeper/gatekeeper /
 
+ENV APP_ENV=release
 ENTRYPOINT ["/gatekeeper"]
