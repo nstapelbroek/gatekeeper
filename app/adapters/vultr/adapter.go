@@ -23,12 +23,12 @@ func NewVultrAdapter(apiKey string, firewallGroupID string) *adapter {
 }
 
 func (a *adapter) CreateRule(rule domain.Rule) (err error) {
-	ruleNumber, keyExists := a.ruleNumbersIndex[rule.String()]
+	_, keyExists := a.ruleNumbersIndex[rule.String()]
 	if keyExists {
 		return // Block subsequent rule requests util it's removed by the timeout
 	}
 
-	ruleNumber, err = a.client.CreateFirewallRule(a.firewallGroupId, rule.Protocol.String(), rule.Port.String(), &rule.IPNet)
+	ruleNumber, err := a.client.CreateFirewallRule(a.firewallGroupId, rule.Protocol.String(), rule.Port.String(), &rule.IPNet)
 	if err == nil {
 		a.ruleNumbersIndex[rule.String()] = ruleNumber
 	}

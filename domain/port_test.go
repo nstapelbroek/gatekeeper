@@ -49,11 +49,11 @@ func TestNewPortFromString(t *testing.T) {
 		t.Errorf("Port constructor failed to set the correct beginPort value")
 	}
 
-	if port.endPort != 80808 {
+	if port.endPort != 8080 {
 		t.Errorf("Port constructor failed to set the correct endPort value")
 	}
 
-	if port.IsSinglePort() {
+	if !port.IsSinglePort() {
 		t.Errorf("Port misinterpreted a single port as range")
 	}
 
@@ -69,11 +69,11 @@ func TestNewPortFromStringWithWhiteSpaces(t *testing.T) {
 		t.Errorf("Port constructor failed to set the correct beginPort value")
 	}
 
-	if port.endPort != 80808 {
+	if port.endPort != 8080 {
 		t.Errorf("Port constructor failed to set the correct endPort value")
 	}
 
-	if port.IsSinglePort() {
+	if !port.IsSinglePort() {
 		t.Errorf("Port misinterpreted a single port as range")
 	}
 
@@ -93,7 +93,7 @@ func TestNewPortRangeFromStringWithWhiteSpaces(t *testing.T) {
 		t.Errorf("Port constructor failed to set the correct endPort value")
 	}
 
-	if !port.IsSinglePort() {
+	if port.IsSinglePort() {
 		t.Errorf("Port failed to detect that it was a range")
 	}
 

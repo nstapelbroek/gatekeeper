@@ -65,7 +65,7 @@ func bootRoutes(a *App) {
 func (a App) Run() (err error) {
 	err = a.router.Run(":" + a.config.GetString("http_port"))
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println(err.Error())
 	}
 
 	return
