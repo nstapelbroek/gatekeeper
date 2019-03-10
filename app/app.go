@@ -6,6 +6,7 @@ import (
 	"github.com/nstapelbroek/gatekeeper/app/handlers"
 	"github.com/nstapelbroek/gatekeeper/app/middlewares"
 	"github.com/spf13/viper"
+	"log"
 )
 
 type App struct {
@@ -37,10 +38,6 @@ func bootServices(a *App) {
 	a.adapterFactory = adapters.NewAdapterFactory(a.config)
 }
 
-func (a App) Run() error {
-	return a.router.Run(":" + a.config.GetString("http_port"))
-}
-
 func bootRouter(a *App) {
 	gin.SetMode(a.config.GetString("app_env"))
 	a.router = gin.Default()
@@ -66,4 +63,13 @@ func bootRoutes(a *App) {
 	a.router.Handle("HEAD", "/", handlers.MethodNotAllowed)
 	a.router.Handle("OPTIONS", "/", handlers.MethodNotAllowed)
 	a.router.NoRoute(handlers.NotFound)
+}
+
+func (a App) Run() (err error) {
+	err = a.router.Run(":" + a.config.GetString("http_port"))
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	return
 }
