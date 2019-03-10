@@ -1,7 +1,7 @@
 package dummy
 
 import (
-	"github.com/nstapelbroek/gatekeeper/domain/firewall"
+	"github.com/nstapelbroek/gatekeeper/domain"
 )
 
 type adapter struct{}
@@ -12,10 +12,10 @@ func NewDummyAdapter() *adapter {
 	return a
 }
 
-func (adapter *adapter) CreateRule(rule firewall.Rule) (err error) {
+func (adapter *adapter) CreateRule(rule domain.Rule) (err error) {
 	return
 }
 
-func (adapter *adapter) DeleteRule(rule firewall.Rule) (err error) {
+func (adapter *adapter) DeleteRule(rule domain.Rule) (err error) {
 	return
 }

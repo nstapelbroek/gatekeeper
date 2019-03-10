@@ -1,18 +1,18 @@
 package dummy
 
 import (
-	"github.com/nstapelbroek/gatekeeper/domain/firewall"
+	"github.com/nstapelbroek/gatekeeper/domain"
 	"net"
 	"testing"
 )
 
-func getRule() firewall.Rule {
-	protocol, _ := firewall.NewProtocolFromString("TCP")
-	direction, _ := firewall.NewDirectionFromString("inbound")
+func getRule() domain.Rule {
+	protocol, _ := domain.NewProtocolFromString("TCP")
+	direction, _ := domain.NewDirectionFromString("inbound")
 
-	r := firewall.Rule{
-		IP:        net.ParseIP("127.0.0.1"),
-		Port:      firewall.NewSinglePort(22),
+	r := domain.Rule{
+		IPNet:     net.IPNet{IP: net.ParseIP("127.0.0.1"), Mask: net.CIDRMask(32, 32)},
+		Port:      domain.NewSinglePort(22),
 		Protocol:  protocol,
 		Direction: direction,
 	}

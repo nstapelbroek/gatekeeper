@@ -1,8 +1,8 @@
-package firewall
+package domain
 
 import (
-	"strings"
 	"errors"
+	"strings"
 )
 
 // ErrInvalidProtocolString is a constant used for saving the error that could occur when an invalid protocol is passed
@@ -15,7 +15,7 @@ type Protocol int
 
 // TCP is a constant value used in the Protocol value object
 const (
-	TCP  Protocol = iota + 1
+	TCP Protocol = iota + 1
 	UDP
 	ICMP
 )
@@ -46,11 +46,11 @@ func NewProtocolFromString(protocol string) (Protocol, error) {
 func (p Protocol) String() string {
 	switch p {
 	case TCP:
-		return "TCP"
+		return "tcp"
 	case UDP:
-		return "UDP"
+		return "udp"
 	case ICMP:
-		return "ICMP"
+		return "icmp"
 	default:
 		return ""
 	}

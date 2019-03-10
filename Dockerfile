@@ -1,15 +1,20 @@
-FROM alpine:3.7
+FROM golang:1.12 AS build-env
+# GOPATH is /go
+WORKDIR  /go/src/github.com/nstapelbroek/gatekeeper 
 
-ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.2/s6-overlay-amd64.tar.gz /tmp/
-COPY ./dev/docker/etc /etc
-ENTRYPOINT ["/init"]
+RUN go get -u github.com/golang/dep/cmd/dep
+COPY . .
+RUN dep ensure
+RUN CGO_ENABLED=0 GOOS=linux go build  -ldflags '-w -s' -a -installsuffix cgo -o gatekeeper ./cmd/gatekeeper
 
-# Run container setup commands
-RUN apk add --no-cache tar ca-certificates \
-    && mkdir /app \
-    && adduser -S golang\
-    && tar xzf /tmp/s6-overlay-amd64.tar.gz -C /
+FROM alpine:3.9
 
-COPY gatekeeper /app/gatekeeper
+ARG VCS_REF
+LABEL org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="https://github.com/nstapelbroek/gatekeeper"
 
-EXPOSE 8080
+RUN apk add --no-cache ca-certificates
+COPY --from=build-env /go/src/github.com/nstapelbroek/gatekeeper/gatekeeper /
+
+ENV APP_ENV=release
+ENTRYPOINT ["/gatekeeper"]

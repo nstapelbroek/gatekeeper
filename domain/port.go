@@ -1,4 +1,4 @@
-package firewall
+package domain
 
 import (
 	"errors"
@@ -42,6 +42,7 @@ func NewPortRange(startPort int, endPort int) (PortRange, error) {
 
 // NewPortFromString creates a portRange struct from an input string
 func NewPortFromString(port string) (PortRange, error) {
+	port = strings.Replace(port, " ", "", -1)
 	if !strings.Contains(port, "-") {
 		port, err := strconv.ParseInt(port, 10, 0)
 
