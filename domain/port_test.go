@@ -42,6 +42,73 @@ func TestNewPortRange(t *testing.T) {
 	}
 }
 
+func TestNewPortFromString(t *testing.T) {
+	port, _ := NewPortFromString("8080")
+
+	if port.beginPort != 8080 {
+		t.Errorf("Port constructor failed to set the correct beginPort value")
+	}
+
+	if port.endPort != 80808 {
+		t.Errorf("Port constructor failed to set the correct endPort value")
+	}
+
+	if port.IsSinglePort() {
+		t.Errorf("Port misinterpreted a single port as range")
+	}
+
+	if port.String() != "8080" {
+		t.Errorf("Port to string conversion gone wrong , got %v want %v", port.String(), "8080")
+	}
+}
+
+func TestNewPortFromStringWithWhiteSpaces(t *testing.T) {
+	port, _ := NewPortFromString("   8080    ")
+
+	if port.beginPort != 8080 {
+		t.Errorf("Port constructor failed to set the correct beginPort value")
+	}
+
+	if port.endPort != 80808 {
+		t.Errorf("Port constructor failed to set the correct endPort value")
+	}
+
+	if port.IsSinglePort() {
+		t.Errorf("Port misinterpreted a single port as range")
+	}
+
+	if port.String() != "8080" {
+		t.Errorf("Port to string conversion gone wrong , got %v want %v", port.String(), "8080")
+	}
+}
+
+func TestNewPortRangeFromStringWithWhiteSpaces(t *testing.T) {
+	port, _ := NewPortFromString(" 20 - 22 ")
+
+	if port.beginPort != 20 {
+		t.Errorf("Port constructor failed to set the correct beginPort value")
+	}
+
+	if port.endPort != 22 {
+		t.Errorf("Port constructor failed to set the correct endPort value")
+	}
+
+	if !port.IsSinglePort() {
+		t.Errorf("Port failed to detect that it was a range")
+	}
+
+	if port.String() != "20-22" {
+		t.Errorf("Port to string conversion gone wrong , got %v want %v", port.String(), "20-22")
+	}
+}
+
+func TestNewPortFromStringWithInvalidValue(t *testing.T) {
+	_, err := NewPortFromString("20:22")
+	if err.Error() != "strconv.ParseInt: parsing \"20:22\": invalid syntax" {
+		t.Errorf("NewPortFromString did not fail to parse")
+	}
+}
+
 func TestNewPortRangeInvalidValue(t *testing.T) {
 	_, err := NewPortRange(20, 10)
 	if err != ErrStartHigherThanEnd {
