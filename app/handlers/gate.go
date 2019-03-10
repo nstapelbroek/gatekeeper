@@ -58,12 +58,6 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, adapters []ada
 
 func (g gateHandler) PostOpen(c *gin.Context) {
 	ipNet := g.getIpNetFromContext(c)
-	ip := ipNet.IP
-	if ip.IsUnspecified() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Local IP's cannot be whitelisted"})
-		return
-	}
-
 	rules := make([]domain.Rule, len(g.defaultRules))
 	copy(rules, g.defaultRules)
 	var adapterErrors []error
