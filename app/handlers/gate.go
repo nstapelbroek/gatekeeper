@@ -80,7 +80,7 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	}
 
 	content := gin.H{
-		"detail": fmt.Sprintf("%s has been whitelisted for %d seconds", ipNet.String(), g.defaultTimeout),
+		"detail": fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds()),
 	}
 	c.JSON(http.StatusCreated, content)
 }
