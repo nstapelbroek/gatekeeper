@@ -33,9 +33,9 @@ func (a *adapter) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
-func (a *adapter) CreateRule(rule domain.Rule) (err error) {
+func (a *adapter) newRequestFromDomainRule(rule domain.Rule) *godo.FirewallRulesRequest {
 	doSource := &godo.Sources{Addresses: []string{rule.IPNet.String()}}
-	addRulesRequest := &godo.FirewallRulesRequest{
+	rulesRequest := &godo.FirewallRulesRequest{
 		InboundRules: []godo.InboundRule{{
 			Protocol:  rule.Protocol.String(),
 			PortRange: rule.Port.String(),
@@ -43,10 +43,14 @@ func (a *adapter) CreateRule(rule domain.Rule) (err error) {
 		}},
 	}
 
-	_, err = a.client.Firewalls.AddRules(context.TODO(), a.firewallId, addRulesRequest)
+	return rulesRequest
+}
+func (a *adapter) CreateRule(rule domain.Rule) (err error) {
+	_, err = a.client.Firewalls.AddRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rule))
 	return
 }
 
 func (a *adapter) DeleteRule(rule domain.Rule) (err error) {
+	_, err = a.client.Firewalls.RemoveRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rule))
 	return
 }
