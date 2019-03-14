@@ -61,11 +61,14 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	rules := make([]domain.Rule, len(g.defaultRules))
 	copy(rules, g.defaultRules)
 	var adapterErrors []error
-	for _, rule := range rules {
-		rule.IPNet = ipNet
-		err := g.callAdapters(rule)
-		if err != nil {
-			adapterErrors = append(adapterErrors, err)
+
+	for _, adapter := range g.adapters {
+		for _, rule := range rules {
+			rule.IPNet = ipNet
+			err := g.callAdapter(adapter, rule)
+			if err != nil {
+				adapterErrors = append(adapterErrors, err)
+			}
 		}
 	}
 
@@ -102,9 +105,7 @@ func (g gateHandler) getIpNetFromContext(c *gin.Context) net.IPNet {
 	return net.IPNet{IP: ip, Mask: net.CIDRMask(128, 128)}
 }
 
-func (g gateHandler) callAdapters(rule domain.Rule) (err error) {
-	// Todo loop over each adapter instead of picking the first one
-	adapter := g.adapters[0]
+func (g gateHandler) callAdapter(adapter adapters.Adapter, rule domain.Rule) (err error) {
 	err = adapter.CreateRule(rule)
 
 	if err == nil {
