@@ -18,6 +18,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:62a82e41b452c5d1de1dbc57608162e83372b1f7d136d5e8d5dffe7f19817d38"
+  name = "github.com/digitalocean/godo"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "19a129a06bc8b565baeea8761ba6bf24b80ac262"
+  version = "v1.8.0"
+
+[[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -51,6 +59,14 @@
   packages = ["proto"]
   pruneopts = "UT"
   revision = "5a0f697c9ed9d68fef0116532c6e05cfeae00e55"
+
+[[projects]]
+  digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  pruneopts = "UT"
+  revision = "44c6ddd0a2342c386950e880b658017258da92fc"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
@@ -185,6 +201,28 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:f8b491a7c25030a895a0e579742d07136e6958e77ef2d46e769db8eec4e58fcd"
+  name = "golang.org/x/net"
+  packages = [
+    "context",
+    "context/ctxhttp",
+  ]
+  pruneopts = "UT"
+  revision = "9f648a60d9775ef5c977e7669d1673a7a67bef33"
+
+[[projects]]
+  branch = "master"
+  digest = "1:037497a2c592b7aa03789f9d6492d02e7d7d166c0e363c95cb53952cf11c7ab0"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "UT"
+  revision = "e64efc72b421e893cbf63f17ba2221e7d6d0b0f3"
+
+[[projects]]
+  branch = "master"
   digest = "1:1ac73f06b9fb3a62fac8bd63b7312ba35b03301d0ea89ebdac41a5757c54cea4"
   name = "golang.org/x/sys"
   packages = ["unix"]
@@ -207,6 +245,22 @@
   version = "v0.3.0"
 
 [[projects]]
+  digest = "1:6f3bd49ddf2e104e52062774d797714371fac1b8bddfd8e124ce78e6b2264a10"
+  name = "google.golang.org/appengine"
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch",
+  ]
+  pruneopts = "UT"
+  revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
+  version = "v1.4.0"
+
+[[projects]]
   digest = "1:1b4724d3c8125f6044925f02b485b74bfec9905cbf579d95aafd1a6c8f8447d3"
   name = "gopkg.in/go-playground/validator.v8"
   packages = ["."]
@@ -227,9 +281,11 @@
   analyzer-version = 1
   input-imports = [
     "github.com/JamesClonk/vultr/lib",
+    "github.com/digitalocean/godo",
     "github.com/gin-gonic/gin",
     "github.com/spf13/viper",
     "github.com/stretchr/testify/assert",
+    "golang.org/x/oauth2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
