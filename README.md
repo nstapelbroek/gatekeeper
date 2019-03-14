@@ -7,8 +7,8 @@ Temporary allow access to your cloud infrastructure by authenticating at the gat
 ### Environments
 | Provider   | Supported status | Required Environment Variables |
 |---	|---	|---    |
-| Vultr | :white_check_mark: |`VULTR_API_KEY`, `VULTR_FIREWALL_GROUP`|
-| Digitalocean | In development | None yet |
+| Vultr | :white_check_mark: |`VULTR_PERSONAL_ACCESS_TOKEN`, `VULTR_FIREWALL_ID`|
+| Digitalocean | In development | `DIGITALOCEAN_PERSONAL_ACCESS_TOKEN`, `DIGITALOCEAN_FIREWALL_ID` |
 
 ## Getting Started
 
