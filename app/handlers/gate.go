@@ -47,6 +47,10 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, adapters []ada
 		return nil, errors.New("no rules configured")
 	}
 
+	if len(adapters) == 0 {
+		return nil, errors.New("no adapters configured")
+	}
+
 	h := gateHandler{
 		defaultTimeout: time.Duration(timeoutConfig) * time.Second,
 		adapters:       adapters,
