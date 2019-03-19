@@ -15,4 +15,4 @@ test:
 
 run:
 	if [ "$(TAGNAME)" = "UNDEF" ]; then echo "please provide a valid TAGNAME" && exit 1; fi
-	docker run --rm --name gatekeeper-run -p 8080:8080 -e VULTR_API_KEY=somekey -e VULTR_FIREWALL_GROUP=somegroup -d $(PROJECTNAME):$(TAGNAME_CLEAN)
+	docker run --rm --name gatekeeper-run -p 8080:8080 -e VULTR_PERSONAL_ACCESS_TOKEN=somekey -e VULTR_FIREWALL_ID=somegroup -d $(PROJECTNAME):$(TAGNAME_CLEAN)
