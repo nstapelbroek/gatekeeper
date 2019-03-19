@@ -45,12 +45,10 @@ func bootRouter(a *App) {
 }
 
 func bootRoutes(a *App) {
-	var adapterSlice []adapters.Adapter
-	adapterSlice = append(adapterSlice, a.adapterFactory.GetAdapter())
 	gateHandler, err := handlers.NewGateHandler(
-		a.config.GetInt64("RULE_CLOSE_TIMEOUT"),
-		a.config.GetString("RULE_PORTS"),
-		adapterSlice,
+		a.config.GetInt64("rule_close_timeout"),
+		a.config.GetString("rule_ports"),
+		a.adapterFactory.GetAdapters(),
 	)
 
 	if err != nil {
