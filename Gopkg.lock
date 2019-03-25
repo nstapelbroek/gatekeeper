@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:ed3fc9992df610d07c85c24e0b792268cc1ce226dd9bf8cb2e6ad9a377b35415"
+  digest = "1:dd1f8324e184923247cb425a298b05cbd5e623dc23c06c9e3fc6be97105c01ee"
   name = "github.com/JamesClonk/vultr"
   packages = ["lib"]
   pruneopts = "UT"
-  revision = "fa1c0367800db75e4d10d0ec90c49a8731670224"
-  version = "1.15.0"
+  revision = "fed59ad207c9bda0a5dfe4d18de53ccbb3d80c91"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
