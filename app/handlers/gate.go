@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/nstapelbroek/gatekeeper/app/adapters"
 	"github.com/nstapelbroek/gatekeeper/app/middlewares"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"net"
@@ -16,7 +15,7 @@ import (
 type gateHandler struct {
 	defaultTimeout time.Duration
 	defaultRules   []domain.Rule
-	adapters       []adapters.Adapter
+	adapters       []domain.Adapter
 }
 
 func createRulesFromConfigString(portConfig string) []domain.Rule {
@@ -42,7 +41,7 @@ func createRulesFromConfigString(portConfig string) []domain.Rule {
 	return rules
 }
 
-func NewGateHandler(timeoutConfig int64, rulesConfigValue string, adapters []adapters.Adapter) (*gateHandler, error) {
+func NewGateHandler(timeoutConfig int64, rulesConfigValue string, adapters []domain.Adapter) (*gateHandler, error) {
 	if len(rulesConfigValue) == 0 {
 		return nil, errors.New("no rules configured")
 	}
@@ -62,27 +61,21 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, adapters []ada
 
 func (g gateHandler) PostOpen(c *gin.Context) {
 	ipNet := g.getIpNetFromContext(c)
-	rules := make([]domain.Rule, len(g.defaultRules))
-	copy(rules, g.defaultRules)
-	var adapterErrors []error
+	rules := g.createRules(ipNet)
 
+	errorDetails := make(map[string]string)
 	for _, adapter := range g.adapters {
-		for _, rule := range rules {
-			rule.IPNet = ipNet
-			err := g.callAdapter(adapter, rule)
-			if err != nil {
-				adapterErrors = append(adapterErrors, err)
-			}
+		callResult := g.callAdapter(adapter, rules)
+		if !callResult.IsSuccessful() {
+			errorDetails[adapter.ToString()] = callResult.Error.Error()
 		}
 	}
 
-	if len(adapterErrors) > 0 {
-		var details []string
-		for _, adapterError := range adapterErrors {
-			details = append(details, adapterError.Error())
-		}
-
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Failed applying some rules", "details": details})
+	if len(errorDetails) > 0 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   "Failed applying some rules",
+			"details": errorDetails,
+		})
 		return
 	}
 
@@ -90,6 +83,16 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 		"detail": fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds()),
 	}
 	c.JSON(http.StatusCreated, content)
+}
+
+func (g gateHandler) createRules(ipNet net.IPNet) []domain.Rule {
+	rules := make([]domain.Rule, len(g.defaultRules))
+	copy(rules, g.defaultRules)
+	for index := range rules {
+		rules[index].IPNet = ipNet
+	}
+
+	return rules
 }
 
 func (g gateHandler) getIpNetFromContext(c *gin.Context) net.IPNet {
@@ -109,16 +112,18 @@ func (g gateHandler) getIpNetFromContext(c *gin.Context) net.IPNet {
 	return net.IPNet{IP: ip, Mask: net.CIDRMask(128, 128)}
 }
 
-func (g gateHandler) callAdapter(adapter adapters.Adapter, rule domain.Rule) (err error) {
-	err = adapter.CreateRule(rule)
+func (g gateHandler) callAdapter(adapter domain.Adapter, rules []domain.Rule) (result domain.AdapterResult) {
+	result = adapter.CreateRules(rules)
 
-	if err == nil {
-		timer := time.NewTimer(time.Duration(g.defaultTimeout))
-		go func(rule domain.Rule) {
-			<-timer.C
-			_ = adapter.DeleteRule(rule)
-		}(rule)
+	if !result.IsSuccessful() {
+		return
 	}
+
+	timer := time.NewTimer(time.Duration(g.defaultTimeout))
+	go func(rules []domain.Rule) {
+		<-timer.C
+		_ = adapter.DeleteRules(rules)
+	}(rules)
 
 	return
 }

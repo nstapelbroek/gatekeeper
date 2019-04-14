@@ -6,16 +6,18 @@ import (
 
 type adapter struct{}
 
-// NewDummyAdapter will create a new dummy adapter object for testing purposes.
-func NewDummyAdapter() *adapter {
-	a := new(adapter)
-	return a
+func (a *adapter) ToString() string {
+	return "dummy"
 }
 
-func (adapter *adapter) CreateRule(rule domain.Rule) (err error) {
-	return
+func (adapter *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
+	return domain.AdapterResult{
+		Error:  nil,
+	}
 }
 
-func (adapter *adapter) DeleteRule(rule domain.Rule) (err error) {
-	return
+func (adapter *adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
+	return domain.AdapterResult{
+		Error:  nil,
+	}
 }

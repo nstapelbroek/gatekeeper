@@ -33,24 +33,41 @@ func (a *adapter) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
-func (a *adapter) newRequestFromDomainRule(rule domain.Rule) *godo.FirewallRulesRequest {
-	doSource := &godo.Sources{Addresses: []string{rule.IPNet.String()}}
+func (a *adapter) ToString() string {
+	return "digitalocean"
+}
+
+func (a *adapter) newRequestFromDomainRule(rules []domain.Rule) *godo.FirewallRulesRequest {
 	rulesRequest := &godo.FirewallRulesRequest{
-		InboundRules: []godo.InboundRule{{
-			Protocol:  rule.Protocol.String(),
-			PortRange: rule.Port.String(),
-			Sources:   doSource,
-		}},
+		InboundRules: []godo.InboundRule{},
+	}
+
+	for _, rule := range rules {
+		doSource := &godo.Sources{Addresses: []string{rule.IPNet.String()}}
+		rulesRequest.InboundRules = append(rulesRequest.InboundRules,
+			godo.InboundRule{
+				Protocol:  rule.Protocol.String(),
+				PortRange: rule.Port.String(),
+				Sources:   doSource,
+			},
+		)
 	}
 
 	return rulesRequest
 }
-func (a *adapter) CreateRule(rule domain.Rule) (err error) {
-	_, err = a.client.Firewalls.AddRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rule))
-	return
+
+func (a *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
+	_, err := a.client.Firewalls.AddRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rules))
+
+	return domain.AdapterResult{
+		Error:  err,
+	}
 }
 
-func (a *adapter) DeleteRule(rule domain.Rule) (err error) {
-	_, err = a.client.Firewalls.RemoveRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rule))
-	return
+func (a *adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
+	_, err := a.client.Firewalls.RemoveRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rules))
+
+	return domain.AdapterResult{
+		Error:  err,
+	}
 }

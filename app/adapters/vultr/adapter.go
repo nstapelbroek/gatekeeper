@@ -11,6 +11,8 @@ type adapter struct {
 	ruleNumbersIndex map[string]int
 }
 
+type ruleFunction func(rule domain.Rule) error
+
 func NewVultrAdapter(apiKey string, firewallGroupID string) *adapter {
 	vultrClient := lib.NewClient(apiKey, nil)
 
@@ -20,6 +22,31 @@ func NewVultrAdapter(apiKey string, firewallGroupID string) *adapter {
 	adapter.ruleNumbersIndex = make(map[string]int)
 
 	return adapter
+}
+
+func (a *adapter) ToString() string {
+	return "vultr"
+}
+
+func (a *adapter) executeForEachRule(rules []domain.Rule, function ruleFunction) domain.AdapterResult {
+	for _, rule := range rules {
+		err := function(rule)
+		if err == nil {
+			continue
+		}
+
+		return domain.AdapterResult{Error: err}
+	}
+
+	return domain.AdapterResult{Error: nil}
+}
+
+func (a *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
+	return a.executeForEachRule(rules, a.CreateRule)
+}
+
+func (a *adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
+	return a.executeForEachRule(rules, a.DeleteRule)
 }
 
 func (a *adapter) CreateRule(rule domain.Rule) (err error) {
