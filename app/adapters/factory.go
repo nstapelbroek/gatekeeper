@@ -4,6 +4,7 @@ package adapters
 import (
 	"github.com/nstapelbroek/gatekeeper/app/adapters/digitalocean"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/vultr"
+	"github.com/nstapelbroek/gatekeeper/domain"
 	"github.com/spf13/viper"
 )
 
@@ -18,7 +19,7 @@ func NewAdapterFactory(config *viper.Viper) *AdapterFactory {
 	return f
 }
 
-func (c AdapterFactory) GetAdapters() (adapterCollection []Adapter) {
+func (c AdapterFactory) GetAdapters() (adapterCollection []domain.Adapter) {
 	config := c.config
 
 	doToken := config.GetString("digitalocean_personal_access_token")
