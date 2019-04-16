@@ -38,7 +38,7 @@ func (a *adapter) executeForEachRule(rules []domain.Rule, function ruleFunction)
 		return domain.AdapterResult{Error: err}
 	}
 
-	return domain.AdapterResult{Error: nil}
+	return domain.AdapterResult{}
 }
 
 func (a *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {

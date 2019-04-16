@@ -18,29 +18,6 @@ type gateHandler struct {
 	adapters       []domain.Adapter
 }
 
-func createRulesFromConfigString(portConfig string) []domain.Rule {
-	portsAndProtocols := strings.Split(portConfig, ",")
-	rules := make([]domain.Rule, len(portsAndProtocols))
-
-	for index, portAndProtocol := range portsAndProtocols {
-		portAndProtocol := strings.SplitN(portAndProtocol, ":", 2)
-
-		direction, _ := domain.NewDirectionFromString("inbound")
-		protocol, _ := domain.NewProtocolFromString(portAndProtocol[0])
-		port, _ := domain.NewPortFromString(portAndProtocol[1])
-
-		newRule := domain.Rule{
-			Direction: direction,
-			Protocol:  protocol,
-			Port:      port,
-		}
-
-		rules[index] = newRule
-	}
-
-	return rules
-}
-
 func NewGateHandler(timeoutConfig int64, rulesConfigValue string, adapters []domain.Adapter) (*gateHandler, error) {
 	if len(rulesConfigValue) == 0 {
 		return nil, errors.New("no rules configured")
@@ -65,10 +42,17 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 
 	errorDetails := make(map[string]string)
 	for _, adapter := range g.adapters {
-		callResult := g.callAdapter(adapter, rules)
+		callResult := adapter.CreateRules(rules)
 		if !callResult.IsSuccessful() {
 			errorDetails[adapter.ToString()] = callResult.Error.Error()
+			continue
 		}
+
+		timer := time.NewTimer(time.Duration(g.defaultTimeout))
+		go func(adapter domain.Adapter, rules []domain.Rule) {
+			<-timer.C
+			_ = adapter.DeleteRules(rules)
+		}(adapter, rules)
 	}
 
 	if len(errorDetails) > 0 {
@@ -112,18 +96,25 @@ func (g gateHandler) getIpNetFromContext(c *gin.Context) net.IPNet {
 	return net.IPNet{IP: ip, Mask: net.CIDRMask(128, 128)}
 }
 
-func (g gateHandler) callAdapter(adapter domain.Adapter, rules []domain.Rule) (result domain.AdapterResult) {
-	result = adapter.CreateRules(rules)
+func createRulesFromConfigString(portConfig string) []domain.Rule {
+	portsAndProtocols := strings.Split(portConfig, ",")
+	rules := make([]domain.Rule, len(portsAndProtocols))
 
-	if !result.IsSuccessful() {
-		return
+	for index, portAndProtocol := range portsAndProtocols {
+		portAndProtocol := strings.SplitN(portAndProtocol, ":", 2)
+
+		direction, _ := domain.NewDirectionFromString("inbound")
+		protocol, _ := domain.NewProtocolFromString(portAndProtocol[0])
+		port, _ := domain.NewPortFromString(portAndProtocol[1])
+
+		newRule := domain.Rule{
+			Direction: direction,
+			Protocol:  protocol,
+			Port:      port,
+		}
+
+		rules[index] = newRule
 	}
 
-	timer := time.NewTimer(time.Duration(g.defaultTimeout))
-	go func(rules []domain.Rule) {
-		<-timer.C
-		_ = adapter.DeleteRules(rules)
-	}(rules)
-
-	return
+	return rules
 }
