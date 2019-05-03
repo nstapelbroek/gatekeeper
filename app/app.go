@@ -10,9 +10,10 @@ import (
 )
 
 type App struct {
-	router         *gin.Engine
-	config         *viper.Viper
-	adapterFactory *adapters.AdapterFactory
+	router            *gin.Engine
+	config            *viper.Viper
+	adapterFactory    *adapters.AdapterFactory
+	adapterDispatcher *adapters.AdapterDispatcher
 	//register       *domain.Register
 }
 
@@ -36,6 +37,13 @@ func bootMiddleware(a *App) {
 
 func bootServices(a *App) {
 	a.adapterFactory = adapters.NewAdapterFactory(a.config)
+
+	dispatcher, err := adapters.NewAdapterDispatcher(a.adapterFactory.GetAdapters())
+	if err != nil {
+		panic(err)
+	}
+
+	a.adapterDispatcher = dispatcher
 }
 
 func bootRouter(a *App) {
@@ -48,7 +56,7 @@ func bootRoutes(a *App) {
 	gateHandler, err := handlers.NewGateHandler(
 		a.config.GetInt64("rule_close_timeout"),
 		a.config.GetString("rule_ports"),
-		a.adapterFactory.GetAdapters(),
+		a.adapterDispatcher,
 	)
 
 	if err != nil {
