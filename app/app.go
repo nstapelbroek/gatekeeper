@@ -36,14 +36,17 @@ func bootMiddleware(a *App) {
 }
 
 func bootServices(a *App) {
-	a.adapterFactory = adapters.NewAdapterFactory(a.config)
-
-	dispatcher, err := adapters.NewAdapterDispatcher(a.adapterFactory.GetAdapters())
+	adapterFactory, err := adapters.NewAdapterFactory(a.config)
+	a.adapterFactory = adapterFactory
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
+	dispatcher, err := adapters.NewAdapterDispatcher(a.adapterFactory.GetAdapters())
 	a.adapterDispatcher = dispatcher
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func bootRouter(a *App) {

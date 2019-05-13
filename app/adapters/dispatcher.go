@@ -1,13 +1,12 @@
 package adapters
 
 import (
-	"errors"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"sync"
 )
 
 type AdapterDispatcher struct {
-	adapterInstances []domain.Adapter
+	adapterInstances *[]domain.Adapter
 }
 
 type DispatchResult struct {
@@ -19,11 +18,7 @@ func (dr DispatchResult) HasFailures() bool {
 	return len(dr.FailedDispatches) > 0
 }
 
-func NewAdapterDispatcher(adapterInstances []domain.Adapter) (*AdapterDispatcher, error) {
-	if len(adapterInstances) == 0 {
-		return nil, errors.New("no adapters configured")
-	}
-
+func NewAdapterDispatcher(adapterInstances *[]domain.Adapter) (*AdapterDispatcher, error) {
 	d := AdapterDispatcher{
 		adapterInstances: adapterInstances,
 	}
@@ -43,7 +38,7 @@ func (ad AdapterDispatcher) dispatch(rules []domain.Rule, action string) (dispat
 	resultChannel := make(chan domain.AdapterResult)
 	var wg sync.WaitGroup
 
-	for _, adapter := range ad.adapterInstances {
+	for _, adapter := range *ad.adapterInstances {
 		wg.Add(1)
 		go func(a domain.Adapter) {
 			defer wg.Done()
