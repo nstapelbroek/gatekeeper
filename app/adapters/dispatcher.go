@@ -2,22 +2,21 @@ package adapters
 
 import (
 	"errors"
-	"fmt"
 	"github.com/nstapelbroek/gatekeeper/domain"
+	"sync"
 )
 
 type AdapterDispatcher struct {
-	inputChannels []chan []domain.Rule
-	resultChannel chan domain.AdapterResult
+	adapterInstances []domain.Adapter
 }
 
-func adapterWorker(adapter domain.Adapter, input <-chan []domain.Rule, results chan<- domain.AdapterResult) {
-	fmt.Sprintln("worker for adapter %s stated", &adapter)
-	for rules := range input {
-		fmt.Println("recieved job!")
-		results <- adapter.CreateRules(rules)
-		fmt.Println("finished job")
-	}
+type DispatchResult struct {
+	SuccessfulDispatches []domain.AdapterResult
+	FailedDispatches     []domain.AdapterResult
+}
+
+func (dr DispatchResult) HasFailures() bool {
+	return len(dr.FailedDispatches) > 0
 }
 
 func NewAdapterDispatcher(adapterInstances []domain.Adapter) (*AdapterDispatcher, error) {
@@ -26,33 +25,49 @@ func NewAdapterDispatcher(adapterInstances []domain.Adapter) (*AdapterDispatcher
 	}
 
 	d := AdapterDispatcher{
-		resultChannel: make(chan domain.AdapterResult),
-	}
-
-	for _, adapter := range adapterInstances {
-		input := make(chan []domain.Rule)
-		d.inputChannels = append(d.inputChannels, input)
-		go adapterWorker(adapter, input, d.resultChannel)
+		adapterInstances: adapterInstances,
 	}
 
 	return &d, nil
 }
 
-func (ad AdapterDispatcher) Open(rules []domain.Rule) (results []domain.AdapterResult) {
-	for _, inputChannel := range ad.inputChannels {
-		inputChannel <- rules
-	}
-
-	for len(results) != len(ad.inputChannels) {
-		result := <-ad.resultChannel
-		println(result.IsSuccessful())
-		results = append(results, result)
-	}
-
-	return results
+func (ad AdapterDispatcher) Open(rules []domain.Rule) DispatchResult {
+	return ad.dispatch(rules, "create")
 }
 
-func (ad AdapterDispatcher) Close(rules []domain.Rule) (results []domain.AdapterResult) {
-	fmt.Println("close is not implemented yet...")
-	return
+func (ad AdapterDispatcher) Close(rules []domain.Rule) DispatchResult {
+	return ad.dispatch(rules, "delete")
+}
+
+func (ad AdapterDispatcher) dispatch(rules []domain.Rule, action string) (dispatchResult DispatchResult) {
+	resultChannel := make(chan domain.AdapterResult)
+	var wg sync.WaitGroup
+
+	for _, adapter := range ad.adapterInstances {
+		wg.Add(1)
+		go func(a domain.Adapter) {
+			defer wg.Done()
+			if action == "create" {
+				resultChannel <- a.CreateRules(rules)
+			} else if action == "delete" {
+				resultChannel <- a.DeleteRules(rules)
+			}
+		}(adapter)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChannel)
+	}()
+
+	for result := range resultChannel {
+		if result.IsSuccessful() {
+			dispatchResult.SuccessfulDispatches = append(dispatchResult.SuccessfulDispatches, result)
+			continue
+		}
+
+		dispatchResult.FailedDispatches = append(dispatchResult.FailedDispatches, result)
+	}
+
+	return dispatchResult
 }

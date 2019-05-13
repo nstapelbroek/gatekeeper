@@ -14,8 +14,8 @@ import (
 )
 
 type gateHandler struct {
-	defaultTimeout time.Duration
-	defaultRules   []domain.Rule
+	defaultTimeout    time.Duration
+	defaultRules      []domain.Rule
 	adapterDispatcher *adapters.AdapterDispatcher
 }
 
@@ -37,22 +37,17 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	ipNet := g.getIpNetFromContext(c)
 	rules := g.createRules(ipNet)
 
-	_ = g.adapterDispatcher.Open(rules)
-	//callResult := g.adapterDispatcher.Open(rules)
-	//if !callResult.IsSuccessful() {
-	//	c.JSON(http.StatusUnprocessableEntity, gin.H{
-	//		"error":   "Failed applying some rules",
-	//		"details": "todo",
-	//	})
-	//	return
-	//}
+	r := g.adapterDispatcher.Open(rules)
+	if r.HasFailures() {
+		g.handleDispachFailure(r, c)
+		return
+	}
 
 	timer := time.NewTimer(time.Duration(g.defaultTimeout))
 	go func(rules []domain.Rule) {
 		<-timer.C
 		_ = g.adapterDispatcher.Close(rules)
 	}(rules)
-
 
 	content := gin.H{
 		"detail": fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds()),
@@ -86,6 +81,18 @@ func (g gateHandler) getIpNetFromContext(c *gin.Context) net.IPNet {
 
 	// Assuming IPv6 here because conversion to IPv4 failed
 	return net.IPNet{IP: ip, Mask: net.CIDRMask(128, 128)}
+}
+
+func (g gateHandler) handleDispachFailure(r adapters.DispatchResult, c *gin.Context) {
+	var details []string
+	for _, failedResult := range r.FailedDispatches {
+		details = append(details, failedResult.Error.Error())
+	}
+
+	c.JSON(http.StatusUnprocessableEntity, gin.H{
+		"error":   "Failed applying some rules",
+		"details": details,
+	})
 }
 
 func createRulesFromConfigString(portConfig string) []domain.Rule {
