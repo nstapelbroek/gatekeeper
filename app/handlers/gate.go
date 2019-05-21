@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/nstapelbroek/gatekeeper/app/adapters"
 	"github.com/nstapelbroek/gatekeeper/app/middlewares"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"net"
@@ -13,24 +14,20 @@ import (
 )
 
 type gateHandler struct {
-	defaultTimeout time.Duration
-	defaultRules   []domain.Rule
-	adapters       []domain.Adapter
+	defaultTimeout    time.Duration
+	defaultRules      []domain.Rule
+	adapterDispatcher *adapters.AdapterDispatcher
 }
 
-func NewGateHandler(timeoutConfig int64, rulesConfigValue string, adapters []domain.Adapter) (*gateHandler, error) {
+func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *adapters.AdapterDispatcher) (*gateHandler, error) {
 	if len(rulesConfigValue) == 0 {
 		return nil, errors.New("no rules configured")
 	}
 
-	if len(adapters) == 0 {
-		return nil, errors.New("no adapters configured")
-	}
-
 	h := gateHandler{
-		defaultTimeout: time.Duration(timeoutConfig) * time.Second,
-		adapters:       adapters,
-		defaultRules:   createRulesFromConfigString(rulesConfigValue),
+		defaultTimeout:    time.Duration(timeoutConfig) * time.Second,
+		adapterDispatcher: dispatcher,
+		defaultRules:      createRulesFromConfigString(rulesConfigValue),
 	}
 
 	return &h, nil
@@ -40,33 +37,22 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	ipNet := g.getIpNetFromContext(c)
 	rules := g.createRules(ipNet)
 
-	errorDetails := make(map[string]string)
-	for _, adapter := range g.adapters {
-		callResult := adapter.CreateRules(rules)
-		if !callResult.IsSuccessful() {
-			errorDetails[adapter.ToString()] = callResult.Error.Error()
-			continue
-		}
-
-		timer := time.NewTimer(time.Duration(g.defaultTimeout))
-		go func(adapter domain.Adapter, rules []domain.Rule) {
-			<-timer.C
-			_ = adapter.DeleteRules(rules)
-		}(adapter, rules)
+	r, err := g.adapterDispatcher.Open(rules)
+	message := fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds())
+	status := http.StatusCreated
+	if err != nil {
+		status = http.StatusUnprocessableEntity
+		message = err.Error()
 	}
 
-	if len(errorDetails) > 0 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error":   "Failed applying some rules",
-			"details": errorDetails,
-		})
-		return
-	}
+	c.JSON(status, gin.H{"message": message, "details": r})
 
-	content := gin.H{
-		"detail": fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds()),
-	}
-	c.JSON(http.StatusCreated, content)
+	// Schedule deletion
+	timer := time.NewTimer(time.Duration(g.defaultTimeout))
+	go func(rules []domain.Rule) {
+		<-timer.C
+		_, _ = g.adapterDispatcher.Close(rules)
+	}(rules)
 }
 
 func (g gateHandler) createRules(ipNet net.IPNet) []domain.Rule {
