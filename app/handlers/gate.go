@@ -37,23 +37,22 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	ipNet := g.getIpNetFromContext(c)
 	rules := g.createRules(ipNet)
 
-	r := g.adapterDispatcher.Open(rules)
-	if r.HasFailures() {
-		g.handleDispachFailure(r, c)
-		return
+	r, err := g.adapterDispatcher.Open(rules)
+	message := fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds())
+	status := http.StatusCreated
+	if err != nil {
+		status = http.StatusUnprocessableEntity
+		message = err.Error()
 	}
 
+	c.JSON(status, gin.H{"message": message, "details": r})
+
+	// Schedule deletion
 	timer := time.NewTimer(time.Duration(g.defaultTimeout))
 	go func(rules []domain.Rule) {
 		<-timer.C
-		_ = g.adapterDispatcher.Close(rules)
+		_, _ = g.adapterDispatcher.Close(rules)
 	}(rules)
-
-	content := gin.H{
-		"detail": fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds()),
-	}
-
-	c.JSON(http.StatusCreated, content)
 }
 
 func (g gateHandler) createRules(ipNet net.IPNet) []domain.Rule {
@@ -81,18 +80,6 @@ func (g gateHandler) getIpNetFromContext(c *gin.Context) net.IPNet {
 
 	// Assuming IPv6 here because conversion to IPv4 failed
 	return net.IPNet{IP: ip, Mask: net.CIDRMask(128, 128)}
-}
-
-func (g gateHandler) handleDispachFailure(r adapters.DispatchResult, c *gin.Context) {
-	var details []string
-	for _, failedResult := range r.FailedDispatches {
-		details = append(details, failedResult.Error.Error())
-	}
-
-	c.JSON(http.StatusUnprocessableEntity, gin.H{
-		"error":   "Failed applying some rules",
-		"details": details,
-	})
 }
 
 func createRulesFromConfigString(portConfig string) []domain.Rule {

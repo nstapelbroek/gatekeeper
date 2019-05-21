@@ -1,6 +1,7 @@
 package domain
 
 type AdapterResult struct {
+	Output string
 	Error  error
 }
 

@@ -59,15 +59,11 @@ func (a *adapter) newRequestFromDomainRule(rules []domain.Rule) *godo.FirewallRu
 func (a *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
 	_, err := a.client.Firewalls.AddRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rules))
 
-	return domain.AdapterResult{
-		Error:  err,
-	}
+	return domain.AdapterResult{Error: err}
 }
 
 func (a *adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
 	_, err := a.client.Firewalls.RemoveRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rules))
 
-	return domain.AdapterResult{
-		Error:  err,
-	}
+	return domain.AdapterResult{Error: err}
 }

@@ -10,14 +10,10 @@ func (a *adapter) ToString() string {
 	return "dummy"
 }
 
-func (adapter *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
-	return domain.AdapterResult{
-		Error:  nil,
-	}
+func (a *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
+	return domain.AdapterResult{}
 }
 
-func (adapter *adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
-	return domain.AdapterResult{
-		Error:  nil,
-	}
+func (a *adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
+	return domain.AdapterResult{}
 }
