@@ -7,7 +7,9 @@ import (
 	"github.com/nstapelbroek/gatekeeper/app/middlewares"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"log"
+	"os"
 )
 
 type App struct {
@@ -39,20 +41,26 @@ func bootMiddleware(a *App) {
 }
 
 func bootServices(a *App) {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		log.Fatalf("can't initialize zap logger: %v", err)
+	atom := zap.NewAtomicLevel()
+	if gin.Mode() == gin.DebugMode {
+		atom.SetLevel(zapcore.DebugLevel)
 	}
 
-	a.logger = logger
+	encoderCfg := zap.NewProductionEncoderConfig()
+	logger := zap.New(zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderCfg),
+		zapcore.Lock(os.Stdout),
+		atom,
+	))
 
+	a.logger = logger
 	adapterFactory, err := adapters.NewAdapterFactory(a.config)
 	a.adapterFactory = adapterFactory
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	dispatcher, err := adapters.NewAdapterDispatcher(a.adapterFactory.GetAdapters())
+	dispatcher, err := adapters.NewAdapterDispatcher(a.adapterFactory.GetAdapters(), a.logger)
 	a.adapterDispatcher = dispatcher
 	if err != nil {
 		log.Fatalln(err)
@@ -70,6 +78,7 @@ func bootRoutes(a *App) {
 		a.config.GetInt64("rule_close_timeout"),
 		a.config.GetString("rule_ports"),
 		a.adapterDispatcher,
+		a.logger,
 	)
 
 	if err != nil {
@@ -82,11 +91,13 @@ func bootRoutes(a *App) {
 }
 
 func (a App) Run() (err error) {
-	defer a.logger.Sync()
+
 	err = a.router.Run(":" + a.config.GetString("http_port"))
 	if err != nil {
 		log.Println(err.Error())
 	}
+
+	_ = a.logger.Sync()
 
 	return
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/nstapelbroek/gatekeeper/app/adapters"
 	"github.com/nstapelbroek/gatekeeper/app/middlewares"
 	"github.com/nstapelbroek/gatekeeper/domain"
+	"go.uber.org/zap"
 	"net"
 	"net/http"
 	"strings"
@@ -17,9 +18,10 @@ type gateHandler struct {
 	defaultTimeout    time.Duration
 	defaultRules      []domain.Rule
 	adapterDispatcher *adapters.AdapterDispatcher
+	logger            *zap.Logger
 }
 
-func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *adapters.AdapterDispatcher) (*gateHandler, error) {
+func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *adapters.AdapterDispatcher, logger *zap.Logger) (*gateHandler, error) {
 	if len(rulesConfigValue) == 0 {
 		return nil, errors.New("no rules configured")
 	}
@@ -28,6 +30,7 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *ad
 		defaultTimeout:    time.Duration(timeoutConfig) * time.Second,
 		adapterDispatcher: dispatcher,
 		defaultRules:      createRulesFromConfigString(rulesConfigValue),
+		logger:            logger,
 	}
 
 	return &h, nil
@@ -37,6 +40,7 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	ipNet := g.getIpNetFromContext(c)
 	rules := g.createRules(ipNet)
 
+	g.logger.Debug("Opening", zap.String("ip", ipNet.String()), zap.Duration("timeOut", g.defaultTimeout))
 	r, err := g.adapterDispatcher.Open(rules)
 	message := fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds())
 	status := http.StatusCreated
@@ -51,6 +55,7 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	timer := time.NewTimer(time.Duration(g.defaultTimeout))
 	go func(rules []domain.Rule) {
 		<-timer.C
+		g.logger.Debug("Closing", zap.String("ip", rules[0].IPNet.String()))
 		_, _ = g.adapterDispatcher.Close(rules)
 	}(rules)
 }
