@@ -26,12 +26,28 @@ func NewApp(c *viper.Viper) *App {
 		config: c,
 	}
 
+	bootLogging(&a)
 	bootServices(&a)
 	bootRouter(&a)
 	bootMiddleware(&a)
 	bootRoutes(&a)
 
 	return &a
+}
+
+func bootLogging(a *App) {
+	logLevelConfig := zap.NewAtomicLevel()
+	if gin.Mode() == gin.DebugMode {
+		logLevelConfig.SetLevel(zapcore.DebugLevel)
+	}
+
+	encoderConfig := zap.NewProductionEncoderConfig()
+	logger := zap.New(zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig),
+		zapcore.Lock(os.Stdout),
+		logLevelConfig,
+	))
+	a.logger = logger
 }
 
 func bootMiddleware(a *App) {
@@ -41,19 +57,6 @@ func bootMiddleware(a *App) {
 }
 
 func bootServices(a *App) {
-	atom := zap.NewAtomicLevel()
-	if gin.Mode() == gin.DebugMode {
-		atom.SetLevel(zapcore.DebugLevel)
-	}
-
-	encoderCfg := zap.NewProductionEncoderConfig()
-	logger := zap.New(zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderCfg),
-		zapcore.Lock(os.Stdout),
-		atom,
-	))
-
-	a.logger = logger
 	adapterFactory, err := adapters.NewAdapterFactory(a.config)
 	a.adapterFactory = adapterFactory
 	if err != nil {
@@ -91,7 +94,6 @@ func bootRoutes(a *App) {
 }
 
 func (a App) Run() (err error) {
-
 	err = a.router.Run(":" + a.config.GetString("http_port"))
 	if err != nil {
 		log.Println(err.Error())
