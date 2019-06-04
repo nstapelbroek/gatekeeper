@@ -336,6 +336,7 @@
     "github.com/spf13/viper",
     "github.com/stretchr/testify/assert",
     "go.uber.org/zap",
+    "go.uber.org/zap/zapcore",
     "golang.org/x/oauth2",
   ]
   solver-name = "gps-cdcl"
