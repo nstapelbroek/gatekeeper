@@ -6,7 +6,10 @@ import (
 	"github.com/nstapelbroek/gatekeeper/app/handlers"
 	"github.com/nstapelbroek/gatekeeper/app/middlewares"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"log"
+	"os"
 )
 
 type App struct {
@@ -14,6 +17,7 @@ type App struct {
 	config            *viper.Viper
 	adapterFactory    *adapters.AdapterFactory
 	adapterDispatcher *adapters.AdapterDispatcher
+	logger            *zap.Logger
 	//register       *domain.Register
 }
 
@@ -22,6 +26,7 @@ func NewApp(c *viper.Viper) *App {
 		config: c,
 	}
 
+	bootLogging(&a)
 	bootServices(&a)
 	bootRouter(&a)
 	bootMiddleware(&a)
@@ -30,7 +35,23 @@ func NewApp(c *viper.Viper) *App {
 	return &a
 }
 
+func bootLogging(a *App) {
+	logLevelConfig := zap.NewAtomicLevel()
+	if gin.Mode() == gin.DebugMode {
+		logLevelConfig.SetLevel(zapcore.DebugLevel)
+	}
+
+	encoderConfig := zap.NewProductionEncoderConfig()
+	logger := zap.New(zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig),
+		zapcore.Lock(os.Stdout),
+		logLevelConfig,
+	))
+	a.logger = logger
+}
+
 func bootMiddleware(a *App) {
+	middlewares.RegisterAccessLogMiddleware(a.router, a.logger)
 	middlewares.RegisterResolverMiddleware(a.router, a.config)
 	middlewares.RegisterBasicAuthentication(a.router, a.config)
 }
@@ -42,7 +63,7 @@ func bootServices(a *App) {
 		log.Fatalln(err)
 	}
 
-	dispatcher, err := adapters.NewAdapterDispatcher(a.adapterFactory.GetAdapters())
+	dispatcher, err := adapters.NewAdapterDispatcher(a.adapterFactory.GetAdapters(), a.logger)
 	a.adapterDispatcher = dispatcher
 	if err != nil {
 		log.Fatalln(err)
@@ -51,7 +72,7 @@ func bootServices(a *App) {
 
 func bootRouter(a *App) {
 	gin.SetMode(a.config.GetString("app_env"))
-	a.router = gin.Default()
+	a.router = gin.New()
 	a.router.HandleMethodNotAllowed = true
 }
 
@@ -60,6 +81,7 @@ func bootRoutes(a *App) {
 		a.config.GetInt64("rule_close_timeout"),
 		a.config.GetString("rule_ports"),
 		a.adapterDispatcher,
+		a.logger,
 	)
 
 	if err != nil {
@@ -76,6 +98,8 @@ func (a App) Run() (err error) {
 	if err != nil {
 		log.Println(err.Error())
 	}
+
+	_ = a.logger.Sync()
 
 	return
 }

@@ -7,6 +7,11 @@ import (
 	"net"
 )
 
+// OriginContextKey will be used as the request context key where the client's IP is stored
+const (
+	OriginContextKey string = "request-origin-addr"
+)
+
 func OriginFromRemoteAddr() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin, _, _ := net.SplitHostPort(c.Request.RemoteAddr)

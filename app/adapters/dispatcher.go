@@ -3,11 +3,13 @@ package adapters
 import (
 	"errors"
 	"github.com/nstapelbroek/gatekeeper/domain"
+	"go.uber.org/zap"
 	"sync"
 )
 
 type AdapterDispatcher struct {
 	adapterInstances *[]domain.Adapter
+	logger           *zap.Logger
 }
 
 type WrappedAdapterResult struct {
@@ -15,9 +17,10 @@ type WrappedAdapterResult struct {
 	Result domain.AdapterResult
 }
 
-func NewAdapterDispatcher(adapterInstances *[]domain.Adapter) (*AdapterDispatcher, error) {
+func NewAdapterDispatcher(adapterInstances *[]domain.Adapter, logger *zap.Logger) (*AdapterDispatcher, error) {
 	d := AdapterDispatcher{
 		adapterInstances: adapterInstances,
+		logger:           logger,
 	}
 
 	return &d, nil
@@ -77,6 +80,12 @@ func (ad AdapterDispatcher) processDispatchResults(resultChannel chan WrappedAda
 		}
 
 		dispatchResult[name] = output
+		ad.logger.Debug(
+			"Result from API",
+			zap.String("adapter", name),
+			zap.String("output", output),
+			zap.Bool("error", hasErr),
+		)
 	}
 
 	if hasErr {
