@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:dd1f8324e184923247cb425a298b05cbd5e623dc23c06c9e3fc6be97105c01ee"
+  digest = "1:e078eadeac25ef25e5ecacd1aed0deafefd6762458656291bf139bd62a212a38"
   name = "github.com/JamesClonk/vultr"
   packages = ["lib"]
   pruneopts = "UT"
-  revision = "fed59ad207c9bda0a5dfe4d18de53ccbb3d80c91"
-  version = "v2.0.0"
+  revision = "01d38a7653118f68e01e6212607c24f6a96d636e"
+  version = "v2.0.1"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
@@ -95,13 +95,6 @@
   pruneopts = "UT"
   revision = "0ff49de124c6f76f8494e194af75bde0f1a49a29"
   version = "v1.1.6"
-
-[[projects]]
-  digest = "1:ffa97833f33cc1c2b0aae813035227f5ea92528a4a4d955714c454920a42f988"
-  name = "github.com/juju/ratelimit"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "77ed1c8a01217656d2080ad51981f6e99adaa177"
 
 [[projects]]
   digest = "1:5a0ef768465592efca0412f7e838cdc0826712f8447e70e6ccc52eb441e9ab13"
@@ -293,6 +286,14 @@
   pruneopts = "UT"
   revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
   version = "v0.3.2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:9fdc2b55e8e0fafe4b41884091e51e77344f7dc511c5acedcfd98200003bff90"
+  name = "golang.org/x/time"
+  packages = ["rate"]
+  pruneopts = "UT"
+  revision = "9d24e82272b4f38b78bc8cff74fa936d31ccd8ef"
 
 [[projects]]
   digest = "1:6eb6e3b6d9fffb62958cf7f7d88dbbe1dd6839436b0802e194c590667a40412a"
