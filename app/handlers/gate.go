@@ -45,7 +45,7 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 
 	r, err := g.adapterDispatcher.Open(request.Rules)
 	if err != nil {
-		g.openFailedResponse(c, err)
+		g.openFailedResponse(c, err, r)
 		return
 	}
 
@@ -66,8 +66,8 @@ func (g gateHandler) openSuccessResponse(c *gin.Context, ip net.IPNet, timeout t
 	c.JSON(http.StatusCreated, gin.H{"message": message, "details": details})
 }
 
-func (g gateHandler) openFailedResponse(c *gin.Context, err error) {
-	c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+func (g gateHandler) openFailedResponse(c *gin.Context, err error, details map[string]string) {
+	c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error(), "details": details})
 }
 
 func (g gateHandler) scheduleDeletion(request *OpenRequestModel) {
