@@ -10,7 +10,7 @@ import (
 )
 
 type AdapterFactory struct {
-	config *viper.Viper
+	config            *viper.Viper
 	adapterCollection []domain.Adapter
 }
 
@@ -31,7 +31,7 @@ func NewAdapterFactory(config *viper.Viper) (*AdapterFactory, error) {
 	}
 
 	if len(f.adapterCollection) == 0 {
-		return f, errors.New("no adapters configured")
+		return f, errors.New("could not configure any adapters, please set your environment variables")
 	}
 
 	return f, nil
