@@ -21,7 +21,7 @@ type gateHandler struct {
 }
 
 type OpenRequestInput struct {
-	Ip      string `form:"ip" json:"ip" binding:"omitempty,ip"`
+	Ip      string `form:"ip" json:"ip" binding:"omitempty,ip|cidr"`
 	Timeout *int64 `form:"timeout" json:"timeout" binding:"omitempty,min=0,max=3600"`
 }
 
