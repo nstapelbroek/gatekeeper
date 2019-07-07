@@ -26,9 +26,9 @@ func NewApp(c *viper.Viper) *App {
 		config: c,
 	}
 
+	bootRouter(&a)
 	bootLogging(&a)
 	bootServices(&a)
-	bootRouter(&a)
 	bootMiddleware(&a)
 	bootRoutes(&a)
 
