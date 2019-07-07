@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/nstapelbroek/gatekeeper/app/adapters"
-	"github.com/nstapelbroek/gatekeeper/app/middlewares"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"go.uber.org/zap"
 	"net"
@@ -15,10 +14,15 @@ import (
 )
 
 type gateHandler struct {
-	defaultTimeout    time.Duration
+	defaultTimeout    int64
 	defaultRules      []domain.Rule
 	adapterDispatcher *adapters.AdapterDispatcher
 	logger            *zap.Logger
+}
+
+type OpenRequestInput struct {
+	Ip      string `form:"ip" json:"ip" binding:"omitempty,ip|cidr"`
+	Timeout *int64 `form:"timeout" json:"timeout" binding:"omitempty,min=0,max=3600"`
 }
 
 func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *adapters.AdapterDispatcher, logger *zap.Logger) (*gateHandler, error) {
@@ -27,7 +31,7 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *ad
 	}
 
 	h := gateHandler{
-		defaultTimeout:    time.Duration(timeoutConfig) * time.Second,
+		defaultTimeout:    timeoutConfig,
 		adapterDispatcher: dispatcher,
 		defaultRules:      createRulesFromConfigString(rulesConfigValue),
 		logger:            logger,
@@ -37,54 +41,47 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *ad
 }
 
 func (g gateHandler) PostOpen(c *gin.Context) {
-	ipNet := g.getIpNetFromContext(c)
-	rules := g.createRules(ipNet)
-
-	g.logger.Debug("Opening", zap.String("ip", ipNet.String()), zap.Duration("timeOut", g.defaultTimeout))
-	r, err := g.adapterDispatcher.Open(rules)
-	message := fmt.Sprintf("%s has been whitelisted for %.0f seconds", ipNet.String(), g.defaultTimeout.Seconds())
-	status := http.StatusCreated
+	request, err := g.createOpenRequest(c)
 	if err != nil {
-		status = http.StatusUnprocessableEntity
-		message = err.Error()
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request", "details": err.Error()})
+		return
 	}
 
-	c.JSON(status, gin.H{"message": message, "details": r})
+	g.logger.Debug(
+		"Incoming open request",
+		zap.String("ip", request.IpAddress.String()),
+		zap.Duration("timeOut", request.Timeout),
+	)
+	r, err := g.adapterDispatcher.Open(request.Rules)
+	if request.Timeout > 0 {
+		g.scheduleDeletion(request)
+	}
 
-	// Schedule deletion
-	timer := time.NewTimer(time.Duration(g.defaultTimeout))
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error(), "details": r})
+		return
+	}
+
+	g.openSuccessResponse(c, request.IpAddress, request.Timeout, r)
+}
+
+func (g gateHandler) scheduleDeletion(request *domain.OpenRequest) {
+	timer := time.NewTimer(time.Duration(request.Timeout))
 	go func(rules []domain.Rule) {
 		<-timer.C
 		g.logger.Debug("Closing", zap.String("ip", rules[0].IPNet.String()))
 		_, _ = g.adapterDispatcher.Close(rules)
-	}(rules)
+	}(request.Rules)
 }
 
-func (g gateHandler) createRules(ipNet net.IPNet) []domain.Rule {
-	rules := make([]domain.Rule, len(g.defaultRules))
-	copy(rules, g.defaultRules)
-	for index := range rules {
-		rules[index].IPNet = ipNet
+func (g gateHandler) openSuccessResponse(c *gin.Context, ip net.IPNet, timeout time.Duration, details map[string]string) {
+	message := fmt.Sprintf("%s has been whitelisted", ip.String())
+
+	if timeout > 0 {
+		message = message + fmt.Sprintf("for %.0f seconds", timeout.Seconds())
 	}
 
-	return rules
-}
-
-func (g gateHandler) getIpNetFromContext(c *gin.Context) net.IPNet {
-	contextOrigin := c.GetString(middlewares.OriginContextKey)
-	if strings.Contains(contextOrigin, "/") {
-		ip, ipNet, _ := net.ParseCIDR(contextOrigin)
-		return net.IPNet{IP: ip, Mask: ipNet.Mask}
-
-	}
-
-	ip := net.ParseIP(contextOrigin)
-	if ip.To4() != nil {
-		return net.IPNet{IP: ip, Mask: net.CIDRMask(32, 32)}
-	}
-
-	// Assuming IPv6 here because conversion to IPv4 failed
-	return net.IPNet{IP: ip, Mask: net.CIDRMask(128, 128)}
+	c.JSON(http.StatusCreated, gin.H{"message": message, "details": details})
 }
 
 func createRulesFromConfigString(portConfig string) []domain.Rule {
@@ -108,4 +105,26 @@ func createRulesFromConfigString(portConfig string) []domain.Rule {
 	}
 
 	return rules
+}
+
+func (g gateHandler) createOpenRequest(c *gin.Context) (*domain.OpenRequest, error) {
+	// Use model binding and validation from HTTP body. Fall back to origin IP when none is received
+	var input OpenRequestInput
+	if err := c.ShouldBind(&input); err != nil {
+		return nil, err
+	}
+
+	if input.Timeout == nil {
+		input.Timeout = &g.defaultTimeout
+	}
+
+	if input.Ip == "" {
+		input.Ip = c.ClientIP()
+	}
+
+	if input.Ip == "" {
+		return nil, errors.New("could not determine ip")
+	}
+
+	return domain.NewOpenRequest(input.Ip, *input.Timeout, g.defaultRules), nil
 }

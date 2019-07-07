@@ -52,7 +52,6 @@ func bootLogging(a *App) {
 
 func bootMiddleware(a *App) {
 	middlewares.RegisterAccessLogMiddleware(a.router, a.logger)
-	middlewares.RegisterResolverMiddleware(a.router, a.config)
 	middlewares.RegisterBasicAuthentication(a.router, a.config)
 }
 
