@@ -14,10 +14,15 @@ import (
 )
 
 type gateHandler struct {
-	defaultTimeout    time.Duration
+	defaultTimeout    int64
 	defaultRules      []domain.Rule
 	adapterDispatcher *adapters.AdapterDispatcher
 	logger            *zap.Logger
+}
+
+type OpenRequestInput struct {
+	Ip      string `form:"ip" json:"ip" binding:"omitempty,ip"`
+	Timeout *int64 `form:"timeout" json:"timeout" binding:"omitempty,min=0,max=3600"`
 }
 
 func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *adapters.AdapterDispatcher, logger *zap.Logger) (*gateHandler, error) {
@@ -26,7 +31,7 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *ad
 	}
 
 	h := gateHandler{
-		defaultTimeout:    time.Duration(timeoutConfig) * time.Second,
+		defaultTimeout:    timeoutConfig,
 		adapterDispatcher: dispatcher,
 		defaultRules:      createRulesFromConfigString(rulesConfigValue),
 		logger:            logger,
@@ -36,24 +41,37 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *ad
 }
 
 func (g gateHandler) PostOpen(c *gin.Context) {
-	request := NewOpenRequestModel(c, g.defaultTimeout, g.defaultRules)
+	request, err := g.createOpenRequest(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request", "details": err.Error()})
+		return
+	}
+
 	g.logger.Debug(
 		"Incoming open request",
 		zap.String("ip", request.IpAddress.String()),
 		zap.Duration("timeOut", request.Timeout),
 	)
-
 	r, err := g.adapterDispatcher.Open(request.Rules)
+	if request.Timeout > 0 {
+		g.scheduleDeletion(request)
+	}
+
 	if err != nil {
-		g.openFailedResponse(c, err, r)
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error(), "details": r})
 		return
 	}
 
 	g.openSuccessResponse(c, request.IpAddress, request.Timeout, r)
+}
 
-	if request.Timeout > 0 {
-		g.scheduleDeletion(request)
-	}
+func (g gateHandler) scheduleDeletion(request *domain.OpenRequest) {
+	timer := time.NewTimer(time.Duration(request.Timeout))
+	go func(rules []domain.Rule) {
+		<-timer.C
+		g.logger.Debug("Closing", zap.String("ip", rules[0].IPNet.String()))
+		_, _ = g.adapterDispatcher.Close(rules)
+	}(request.Rules)
 }
 
 func (g gateHandler) openSuccessResponse(c *gin.Context, ip net.IPNet, timeout time.Duration, details map[string]string) {
@@ -64,19 +82,6 @@ func (g gateHandler) openSuccessResponse(c *gin.Context, ip net.IPNet, timeout t
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": message, "details": details})
-}
-
-func (g gateHandler) openFailedResponse(c *gin.Context, err error, details map[string]string) {
-	c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error(), "details": details})
-}
-
-func (g gateHandler) scheduleDeletion(request *OpenRequestModel) {
-	timer := time.NewTimer(time.Duration(g.defaultTimeout))
-	go func(rules []domain.Rule) {
-		<-timer.C
-		g.logger.Debug("Closing", zap.String("ip", rules[0].IPNet.String()))
-		_, _ = g.adapterDispatcher.Close(rules)
-	}(request.Rules)
 }
 
 func createRulesFromConfigString(portConfig string) []domain.Rule {
@@ -100,4 +105,26 @@ func createRulesFromConfigString(portConfig string) []domain.Rule {
 	}
 
 	return rules
+}
+
+func (g gateHandler) createOpenRequest(c *gin.Context) (*domain.OpenRequest, error) {
+	// Use model binding and validation from HTTP body. Fall back to origin IP when none is received
+	var input OpenRequestInput
+	if err := c.ShouldBind(&input); err != nil {
+		return nil, err
+	}
+
+	if input.Timeout == nil {
+		input.Timeout = &g.defaultTimeout
+	}
+
+	if input.Ip == "" {
+		input.Ip = c.ClientIP()
+	}
+
+	if input.Ip == "" {
+		return nil, errors.New("could not determine ip")
+	}
+
+	return domain.NewOpenRequest(input.Ip, *input.Timeout, g.defaultRules), nil
 }
