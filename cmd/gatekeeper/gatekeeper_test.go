@@ -13,10 +13,13 @@ func init() {
 func TestDefaultConfigValues(t *testing.T) {
 	config := newConfig()
 
-	assert.Equal(t, "8080", config.GetString("http_port"))
-	assert.Equal(t, "RemoteAddr", config.GetString("resolve_type"))
-	assert.Equal(t, "X-Forwarded-For", config.GetString("resolve_header"))
+	assert.Equal(t, 8080, config.GetInt("http_port"))
 	assert.Equal(t, 120, config.GetInt("rule_close_timeout"))
 	assert.Equal(t, "TCP:22", config.GetString("rule_ports"))
 	assert.Equal(t, "release", config.GetString("app_env"))
+
+	assert.Equal(t, "", config.GetString("digitalocean_personal_access_token"))
+	assert.Equal(t, "", config.GetString("digitalocean_firewall_id"))
+	assert.Equal(t, "", config.GetString("vultr_personal_access_token"))
+	assert.Equal(t, "", config.GetString("vultr_firewall_id"))
 }
