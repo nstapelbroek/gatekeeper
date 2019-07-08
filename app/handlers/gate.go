@@ -41,7 +41,7 @@ func NewGateHandler(timeoutConfig int64, rulesConfigValue string, dispatcher *ad
 }
 
 func (g gateHandler) PostOpen(c *gin.Context) {
-	request, err := g.createOpenRequest(c)
+	request, err := g.createOpenCommandFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request", "details": err.Error()})
 		return
@@ -65,7 +65,7 @@ func (g gateHandler) PostOpen(c *gin.Context) {
 	g.openSuccessResponse(c, request.IpAddress, request.Timeout, r)
 }
 
-func (g gateHandler) scheduleDeletion(request *domain.OpenRequest) {
+func (g gateHandler) scheduleDeletion(request *domain.OpenCommand) {
 	timer := time.NewTimer(time.Duration(request.Timeout))
 	go func(rules []domain.Rule) {
 		<-timer.C
@@ -107,7 +107,7 @@ func createRulesFromConfigString(portConfig string) []domain.Rule {
 	return rules
 }
 
-func (g gateHandler) createOpenRequest(c *gin.Context) (*domain.OpenRequest, error) {
+func (g gateHandler) createOpenCommandFromContext(c *gin.Context) (*domain.OpenCommand, error) {
 	// Use model binding and validation from HTTP body. Fall back to origin IP when none is received
 	var input OpenRequestInput
 	if err := c.ShouldBind(&input); err != nil {
@@ -126,5 +126,5 @@ func (g gateHandler) createOpenRequest(c *gin.Context) (*domain.OpenRequest, err
 		return nil, errors.New("could not determine ip")
 	}
 
-	return domain.NewOpenRequest(input.Ip, *input.Timeout, g.defaultRules), nil
+	return domain.NewOpenCommand(input.Ip, *input.Timeout, g.defaultRules), nil
 }

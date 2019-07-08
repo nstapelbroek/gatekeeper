@@ -6,18 +6,18 @@ import (
 	"time"
 )
 
-type OpenRequest struct {
+type OpenCommand struct {
 	Rules     []Rule
 	Timeout   time.Duration
 	IpAddress net.IPNet
 }
 
-func NewOpenRequest(ip string, timeout int64, applyableRules []Rule) *OpenRequest {
-	var o OpenRequest
+func NewOpenCommand(ip string, timeout int64, boilerplateRules []Rule) *OpenCommand {
+	var o OpenCommand
 
 	o.IpAddress = parseIp(ip)
 	o.Timeout = parseTimeout(timeout)
-	o.Rules = parseRules(o.IpAddress, applyableRules)
+	o.Rules = parseRules(o.IpAddress, boilerplateRules)
 
 	return &o
 }
