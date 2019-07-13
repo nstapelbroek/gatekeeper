@@ -32,7 +32,7 @@ By default, the gatekeeper will open TCP port 22 (for SSH).
 
 A curl example that requests the gatekeeper using your public IP:
 ```curl
-curl -X POST http://localhost:8080/ -d ip=$(curl https://ifconfig.co/ip)&timeout=60
+curl -X POST -s -d 'ip='$(curl -s https://ifconfig.co/ip)'&timeout=60' http://localhost:8080
 ```
 
 Note that you do not need to pass an IP or timeout as form-encoded / json data. A simple POST will use a default timeout
