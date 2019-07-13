@@ -5,11 +5,11 @@ import "testing"
 func TestNewSinglePort(t *testing.T) {
 	port := NewSinglePort(123)
 
-	if port.beginPort != 123 {
+	if port.BeginPort != 123 {
 		t.Errorf("Port constructor failed to set the correct value")
 	}
 
-	if port.endPort != 123 {
+	if port.EndPort != 123 {
 		t.Errorf("Port constructor failed to set the correct value")
 	}
 
@@ -25,12 +25,12 @@ func TestNewSinglePort(t *testing.T) {
 func TestNewPortRange(t *testing.T) {
 	port, _ := NewPortRange(123, 125)
 
-	if port.beginPort != 123 {
-		t.Errorf("Port constructor failed to set the correct beginPort value")
+	if port.BeginPort != 123 {
+		t.Errorf("Port constructor failed to set the correct BeginPort value")
 	}
 
-	if port.endPort != 125 {
-		t.Errorf("Port constructor failed to set the correct endPort value")
+	if port.EndPort != 125 {
+		t.Errorf("Port constructor failed to set the correct EndPort value")
 	}
 
 	if port.IsSinglePort() {
@@ -45,12 +45,12 @@ func TestNewPortRange(t *testing.T) {
 func TestNewPortFromString(t *testing.T) {
 	port, _ := NewPortFromString("8080")
 
-	if port.beginPort != 8080 {
-		t.Errorf("Port constructor failed to set the correct beginPort value")
+	if port.BeginPort != 8080 {
+		t.Errorf("Port constructor failed to set the correct BeginPort value")
 	}
 
-	if port.endPort != 8080 {
-		t.Errorf("Port constructor failed to set the correct endPort value")
+	if port.EndPort != 8080 {
+		t.Errorf("Port constructor failed to set the correct EndPort value")
 	}
 
 	if !port.IsSinglePort() {
@@ -65,12 +65,12 @@ func TestNewPortFromString(t *testing.T) {
 func TestNewPortFromStringWithWhiteSpaces(t *testing.T) {
 	port, _ := NewPortFromString("   8080    ")
 
-	if port.beginPort != 8080 {
-		t.Errorf("Port constructor failed to set the correct beginPort value")
+	if port.BeginPort != 8080 {
+		t.Errorf("Port constructor failed to set the correct BeginPort value")
 	}
 
-	if port.endPort != 8080 {
-		t.Errorf("Port constructor failed to set the correct endPort value")
+	if port.EndPort != 8080 {
+		t.Errorf("Port constructor failed to set the correct EndPort value")
 	}
 
 	if !port.IsSinglePort() {
@@ -85,12 +85,12 @@ func TestNewPortFromStringWithWhiteSpaces(t *testing.T) {
 func TestNewPortRangeFromStringWithWhiteSpaces(t *testing.T) {
 	port, _ := NewPortFromString(" 20 - 22 ")
 
-	if port.beginPort != 20 {
-		t.Errorf("Port constructor failed to set the correct beginPort value")
+	if port.BeginPort != 20 {
+		t.Errorf("Port constructor failed to set the correct BeginPort value")
 	}
 
-	if port.endPort != 22 {
-		t.Errorf("Port constructor failed to set the correct endPort value")
+	if port.EndPort != 22 {
+		t.Errorf("Port constructor failed to set the correct EndPort value")
 	}
 
 	if port.IsSinglePort() {
