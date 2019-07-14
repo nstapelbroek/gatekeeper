@@ -8,6 +8,7 @@ Temporary allow access to your cloud infrastructure by signaling the gatekeeper.
 |---	|---	|---    |
 | Vultr | :white_check_mark: |`VULTR_PERSONAL_ACCESS_TOKEN`, `VULTR_FIREWALL_ID`|
 | Digitalocean |  :white_check_mark: | `DIGITALOCEAN_PERSONAL_ACCESS_TOKEN`, `DIGITALOCEAN_FIREWALL_ID` |
+| AWS | :small_orange_diamond: Only security groups on a single region | `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION`, `AWS_FIREWALL_ID` |
 
 ## Getting Started
 
