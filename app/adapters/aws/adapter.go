@@ -3,7 +3,7 @@ package aws
 import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
+	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/nstapelbroek/gatekeeper/domain"
 )
@@ -14,18 +14,16 @@ type adapter struct {
 }
 
 // todo: how are you going to handle the different regions?
-// see: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_AuthorizeSecurityGroupIngress.html
-
 func NewAWSAdapter(accessKey string, secretKey string, securityGroupId string, awsRegion string) *adapter {
 	adapter := new(adapter)
 	adapter.securityGroupId = securityGroupId
 
-	credProvider := aws.NewStaticCredentialsProvider(accessKey, secretKey, "gatekeeper")
-	cfg := aws.NewConfig()
+	credProvider := aws.NewStaticCredentialsProvider(accessKey, secretKey, "")
+	cfg, _ := external.LoadDefaultAWSConfig()
 	cfg.Credentials = credProvider
-	cfg.EndpointResolver = endpoints.NewDefaultResolver()
-	//cfg.Region = awsRegion
-	adapter.client = ec2.New(*cfg)
+	cfg.Region = awsRegion
+
+	adapter.client = ec2.New(cfg)
 
 	return adapter
 }
@@ -59,7 +57,6 @@ func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 	input := ec2.AuthorizeSecurityGroupIngressInput{
 		IpPermissions: a.createIpPermissions(rules),
 		GroupId:       aws.String(a.securityGroupId),
-		DryRun:        aws.Bool(true),
 	}
 
 	req := a.client.AuthorizeSecurityGroupIngressRequest(&input)
