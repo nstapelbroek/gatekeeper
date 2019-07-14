@@ -13,15 +13,15 @@ var (
 
 // PortRange is a value object containing the Port in a Firewall Rule
 type PortRange struct {
-	beginPort int
-	endPort   int
+	BeginPort int
+	EndPort   int
 }
 
 // NewSinglePort is a constructor for a PortRange with only one port
-func NewSinglePort(portnumber int) PortRange {
+func NewSinglePort(portNumber int) PortRange {
 	var p PortRange
-	p.beginPort = portnumber
-	p.endPort = portnumber
+	p.BeginPort = portNumber
+	p.EndPort = portNumber
 
 	return p
 }
@@ -34,8 +34,8 @@ func NewPortRange(startPort int, endPort int) (PortRange, error) {
 		return p, ErrStartHigherThanEnd
 	}
 
-	p.beginPort = startPort
-	p.endPort = endPort
+	p.BeginPort = startPort
+	p.EndPort = endPort
 
 	return p, nil
 }
@@ -58,14 +58,14 @@ func NewPortFromString(port string) (PortRange, error) {
 
 // IsSinglePort will evaluate if the PortRange contains a single port value
 func (p PortRange) IsSinglePort() bool {
-	return p.beginPort == p.endPort
+	return p.BeginPort == p.EndPort
 }
 
 // String will transform an PortRange to an string representation using a dash to separate begin and end port numbers
 func (p PortRange) String() string {
 	if p.IsSinglePort() {
-		return strconv.Itoa(p.beginPort)
+		return strconv.Itoa(p.BeginPort)
 	}
 
-	return strconv.Itoa(p.beginPort) + "-" + strconv.Itoa(p.endPort)
+	return strconv.Itoa(p.BeginPort) + "-" + strconv.Itoa(p.EndPort)
 }

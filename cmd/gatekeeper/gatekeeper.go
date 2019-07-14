@@ -20,6 +20,10 @@ func newConfig() *viper.Viper {
 	c.SetDefault("digitalocean_firewall_id", "")
 	c.SetDefault("vultr_personal_access_token", "")
 	c.SetDefault("vultr_firewall_id", "")
+	c.SetDefault("aws_secret_key", "")
+	c.SetDefault("aws_access_key", "")
+	c.SetDefault("aws_region", "")
+	c.SetDefault("aws_firewall_id", "")
 
 	c.AutomaticEnv()
 
