@@ -22,4 +22,8 @@ func TestDefaultConfigValues(t *testing.T) {
 	assert.Equal(t, "", config.GetString("digitalocean_firewall_id"))
 	assert.Equal(t, "", config.GetString("vultr_personal_access_token"))
 	assert.Equal(t, "", config.GetString("vultr_firewall_id"))
+	assert.Equal(t, "", config.GetString("aws_secret_key"))
+	assert.Equal(t, "", config.GetString("aws_access_key"))
+	assert.Equal(t, "", config.GetString("aws_region"))
+	assert.Equal(t, "", config.GetString("aws_firewall_id"))
 }
