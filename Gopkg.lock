@@ -10,7 +10,7 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:83c5bbce766e2c11bf10c7e239b682b648f8ff02eacaa5fb4bd3b2d3efb9b550"
+  digest = "1:8219b23a8087d6dcc5cc2d79293e0dc39f450381990be9d65db4d2ec20f99af9"
   name = "github.com/aws/aws-sdk-go-v2"
   packages = [
     "aws",
@@ -36,8 +36,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "098e15df3044cf1b04a222c1c33c3e6135ac89f3"
-  version = "v0.9.0"
+  revision = "5208fda8e296ec2a286fa1b040cb879942a95ada"
+  version = "v0.10.0"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
@@ -281,11 +281,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f8b491a7c25030a895a0e579742d07136e6958e77ef2d46e769db8eec4e58fcd"
+  digest = "1:4c791e2b9890e96a29cc3c330652b0639ee18026e766c838667b0119099d31ea"
   name = "golang.org/x/net"
   packages = [
     "context",
     "context/ctxhttp",
+    "http/httpguts",
+    "http2",
+    "http2/hpack",
+    "idna",
   ]
   pruneopts = "UT"
   revision = "60506f45cf65977eb3a9c6e30f995f54a721c271"
@@ -310,15 +314,25 @@
   revision = "4c4f7f33c9ed00de01c4c741d2177abfcfe19307"
 
 [[projects]]
-  digest = "1:1093f2eb4b344996604f7d8b29a16c5b22ab9e1b25652140d3fede39f640d5cd"
+  digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
   name = "golang.org/x/text"
   packages = [
+    "collate",
+    "collate/build",
+    "internal/colltab",
     "internal/gen",
+    "internal/language",
+    "internal/language/compact",
+    "internal/tag",
     "internal/triegen",
     "internal/ucd",
+    "language",
+    "secure/bidirule",
     "transform",
+    "unicode/bidi",
     "unicode/cldr",
     "unicode/norm",
+    "unicode/rangetable",
   ]
   pruneopts = "UT"
   revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
