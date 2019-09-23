@@ -10,7 +10,7 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:8219b23a8087d6dcc5cc2d79293e0dc39f450381990be9d65db4d2ec20f99af9"
+  digest = "1:65d71bc9719aa85d53fa559ceefb45307d8f9912a9a2a81eebd10f7ea61180dd"
   name = "github.com/aws/aws-sdk-go-v2"
   packages = [
     "aws",
@@ -26,6 +26,7 @@
     "internal/awsutil",
     "internal/ini",
     "internal/sdk",
+    "internal/sdkmath",
     "private/protocol",
     "private/protocol/ec2query",
     "private/protocol/query",
@@ -36,8 +37,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "5208fda8e296ec2a286fa1b040cb879942a95ada"
-  version = "v0.10.0"
+  revision = "9d23340c6faa83de6f72d814bdb3b15667ca220e"
+  version = "v0.12.0"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
