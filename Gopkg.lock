@@ -10,7 +10,7 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:65d71bc9719aa85d53fa559ceefb45307d8f9912a9a2a81eebd10f7ea61180dd"
+  digest = "1:8219b23a8087d6dcc5cc2d79293e0dc39f450381990be9d65db4d2ec20f99af9"
   name = "github.com/aws/aws-sdk-go-v2"
   packages = [
     "aws",
@@ -26,7 +26,6 @@
     "internal/awsutil",
     "internal/ini",
     "internal/sdk",
-    "internal/sdkmath",
     "private/protocol",
     "private/protocol/ec2query",
     "private/protocol/query",
@@ -37,8 +36,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "9d23340c6faa83de6f72d814bdb3b15667ca220e"
-  version = "v0.12.0"
+  revision = "5208fda8e296ec2a286fa1b040cb879942a95ada"
+  version = "v0.10.0"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
@@ -49,12 +48,12 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:d2fac889012661b4b9dff7ba6a54bfd155fc81999ebf56f92ff9ea940167e543"
+  digest = "1:918fd0f816026bb4ceb1787292fa04bf59810f3d494714fe016a7208d5485713"
   name = "github.com/digitalocean/godo"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f9de0f93b1722aadb499310fdf0998ece5283f3f"
-  version = "v1.21.1"
+  revision = "1f632d37f6858f0532207a5f77118c097d94be89"
+  version = "v1.22.0"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
