@@ -58,8 +58,7 @@ Although the tool is very simple, you can configure it to your needs by changing
 ### Development
 If you wish to help building gatekeeper you can start with:
 
-1. [Forking the repository](https://github.com/nstapelbroek/gatekeeper/fork)
-1. Installing it locally (`go get github.com/{your-github-username}/gatekeeper`)
-1. Installing some required tooling like [dep](https://github.com/golang/dep) and [golint](https://github.com/golangci/golangci-lint)
-1. Installing the dependencies using `dep ensure`
-1. Scouting an [issue](https://github.com/nstapelbroek/gatekeeper/issue) or [backlog task](https://github.com/nstapelbroek/gatekeeper/projects) you want to solve
+1. [Fork and clone the repository](https://github.com/nstapelbroek/gatekeeper/fork)
+1. Install dependencies with `go mod tidy`
+1. Optionally you can install additional tooling like [golangci-lint](https://github.com/golangci/golangci-lint)
+1. Start building! You can find some inspiration for changes in the [issues](https://github.com/nstapelbroek/gatekeeper/issue) or [project board](https://github.com/nstapelbroek/gatekeeper/projects)

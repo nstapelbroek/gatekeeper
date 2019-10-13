@@ -2,20 +2,26 @@ language: go
 
 go:
   - "1.12"
+  - "1.13"
+  - "master"
+
+matrix:
+  allow_failures:
+    - go: "master"
+
+branches:
+  only:
+    - latest
+
+env:
+  - GO111MODULE=on
 
 services:
   - docker
 
-env:
-  - DEP_VERSION="0.5.0"
-
-before_install:
-  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep && chmod +x $GOPATH/bin/dep
-  - go get -u golang.org/x/lint/golint
-
 install:
-  - dep ensure
-  - golangci-lint --version || curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.12.5
+  - go mod tidy
+  - golangci-lint --version || curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.20.0
 
 script:
   - golangci-lint run
