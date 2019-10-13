@@ -80,3 +80,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Project specific
+gatekeeper # default go build output
+
