@@ -3,7 +3,6 @@ package ec2
 import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/nstapelbroek/gatekeeper/domain"
 )
@@ -13,23 +12,15 @@ type adapter struct {
 	securityGroupId string
 }
 
-// todo: how are you going to handle the different regions?
-func NewAWSAdapter(accessKey string, secretKey string, securityGroupId string, awsRegion string) *adapter {
-	adapter := new(adapter)
-	adapter.securityGroupId = securityGroupId
-
-	credProvider := aws.NewStaticCredentialsProvider(accessKey, secretKey, "")
-	cfg, _ := external.LoadDefaultAWSConfig()
-	cfg.Credentials = credProvider
-	cfg.Region = awsRegion
-
-	adapter.client = ec2.New(cfg)
-
-	return adapter
+func NewAWSSecurityGroupAdapter(client *ec2.Client, securityGroupId string) *adapter {
+	return &adapter{
+		client:          client,
+		securityGroupId: securityGroupId,
+	}
 }
 
 func (a *adapter) ToString() string {
-	return "aws"
+	return "aws-security-group"
 }
 
 func (a *adapter) createIpPermissions(rules []domain.Rule) []ec2.IpPermission {

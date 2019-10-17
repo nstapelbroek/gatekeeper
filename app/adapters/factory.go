@@ -3,6 +3,7 @@ package adapters
 
 import (
 	"errors"
+	"github.com/nstapelbroek/gatekeeper/app/adapters/aws"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/aws/ec2"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/digitalocean"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/vultr"
@@ -33,10 +34,12 @@ func NewAdapterFactory(config *viper.Viper) (*AdapterFactory, error) {
 
 	awsKey := config.GetString("aws_access_key")
 	awsSecret := config.GetString("aws_secret_key")
-	awsFirewallId := config.GetString("aws_firewall_id")
 	awsRegion := config.GetString("aws_region")
-	if len(awsKey) > 0 && len(awsSecret) > 0 && len(awsFirewallId) > 0 && len(awsRegion) > 0 {
-		f.adapterCollection = append(f.adapterCollection, ec2.NewAWSAdapter(awsKey, awsSecret, awsFirewallId, awsRegion))
+	if len(awsKey) > 0 && len(awsSecret) > 0 && len(awsRegion) > 0 {
+		awsClient := aws.NewAWSClient(awsKey, awsSecret, awsRegion)
+		if awsSecurityGroupId := config.GetString("aws_security_group_id"); len(awsSecurityGroupId) > 0 {
+			f.adapterCollection = append(f.adapterCollection, ec2.NewAWSSecurityGroupAdapter(awsClient, awsSecurityGroupId))
+		}
 	}
 
 	if len(f.adapterCollection) == 0 {

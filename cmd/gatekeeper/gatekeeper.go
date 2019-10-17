@@ -23,7 +23,7 @@ func newConfig() *viper.Viper {
 	c.SetDefault("aws_secret_key", "")
 	c.SetDefault("aws_access_key", "")
 	c.SetDefault("aws_region", "")
-	c.SetDefault("aws_firewall_id", "")
+	c.SetDefault("aws_security_group_id", "")
 
 	c.AutomaticEnv()
 
