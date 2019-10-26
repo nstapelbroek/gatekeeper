@@ -82,5 +82,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # Project specific
-gatekeeper # default go build output
-
+/gatekeeper

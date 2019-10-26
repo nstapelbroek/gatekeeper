@@ -26,4 +26,5 @@ func TestDefaultConfigValues(t *testing.T) {
 	assert.Equal(t, "", config.GetString("aws_access_key"))
 	assert.Equal(t, "", config.GetString("aws_region"))
 	assert.Equal(t, "", config.GetString("aws_security_group_id"))
+	assert.Equal(t, "", config.GetString("aws_network_acl_id"))
 }

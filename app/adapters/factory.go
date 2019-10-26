@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/aws"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/aws/ec2"
+	"github.com/nstapelbroek/gatekeeper/app/adapters/aws/vpc"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/digitalocean"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/vultr"
 	"github.com/nstapelbroek/gatekeeper/domain"
@@ -39,6 +40,9 @@ func NewAdapterFactory(config *viper.Viper) (*AdapterFactory, error) {
 		awsClient := aws.NewAWSClient(awsKey, awsSecret, awsRegion)
 		if awsSecurityGroupId := config.GetString("aws_security_group_id"); len(awsSecurityGroupId) > 0 {
 			f.adapterCollection = append(f.adapterCollection, ec2.NewAWSSecurityGroupAdapter(awsClient, awsSecurityGroupId))
+		}
+		if awsNetworkACLId := config.GetString("aws_network_acl_id"); len(awsNetworkACLId) > 0 {
+			f.adapterCollection = append(f.adapterCollection, vpc.NewAWSNetworkACLAdapter(awsClient, awsNetworkACLId, config.GetInt64("aws_network_acl_start_number")))
 		}
 	}
 
