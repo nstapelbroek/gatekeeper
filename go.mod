@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/JamesClonk/vultr v2.0.1+incompatible
-	github.com/aws/aws-sdk-go-v2 v0.15.0
+	github.com/aws/aws-sdk-go-v2 v0.17.0
 	github.com/digitalocean/godo v1.24.0
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.5.0
