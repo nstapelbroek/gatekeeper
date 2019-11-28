@@ -6,17 +6,12 @@ require (
 	github.com/JamesClonk/vultr v2.0.1+incompatible
 	github.com/aws/aws-sdk-go-v2 v0.17.0
 	github.com/digitalocean/godo v1.27.0
-	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.5.0
-	github.com/golang/protobuf v1.3.2 // indirect
-	github.com/json-iterator/go v1.1.7 // indirect
-	github.com/mattn/go-isatty v0.0.9 // indirect
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.5.0
 	github.com/stretchr/testify v1.4.0
-	github.com/ugorji/go/codec v1.1.7 // indirect
 	go.uber.org/zap v1.13.0
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
