@@ -8,22 +8,20 @@ import (
 )
 
 type adapter struct {
-	client           *ec2.Client
-	NetworkAclId     string
-	startRuleNumber  int64
-	ruleStepsTaken   int
-	ruleStepSize     int
-	ruleNumbersIndex map[string]int64
+	client          *ec2.Client
+	NetworkAclId    string
+	startRuleNumber int64
+	ruleStepsTaken  int
+	ruleStepSize    int
 }
 
 func NewAWSNetworkACLAdapter(client *ec2.Client, networkAclId string, startRuleNumber int64) *adapter {
 	return &adapter{
-		client:           client,
-		NetworkAclId:     networkAclId,
-		startRuleNumber:  startRuleNumber,
-		ruleStepsTaken:   0,
-		ruleStepSize:     10,
-		ruleNumbersIndex: make(map[string]int64),
+		client:          client,
+		NetworkAclId:    networkAclId,
+		startRuleNumber: startRuleNumber,
+		ruleStepsTaken:  0,
+		ruleStepSize:    10,
 	}
 }
 
@@ -77,23 +75,24 @@ func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 		input := a.buildCreateAclEntryRequest(rule)
 		req := a.client.CreateNetworkAclEntryRequest(input)
 		_, _ = req.Send(context.TODO()) // TODO error handling
-		a.ruleNumbersIndex[rule.String()] = *input.RuleNumber
 	}
 
 	return domain.AdapterResult{}
 }
 
 func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
+	currentRules := a.getPersistedRules()
 	for _, rule := range rules {
-		ruleNumber, keyExists := a.ruleNumbersIndex[rule.String()]
-		if !keyExists {
-			return
+		persistedRule := a.findRuleInPersistedRules(rule, currentRules)
+		if persistedRule == nil {
+			// todo log
+			continue
 		}
 
 		input := ec2.DeleteNetworkAclEntryInput{
 			Egress:       aws.Bool(rule.Direction.IsOutbound()),
 			NetworkAclId: aws.String(a.NetworkAclId),
-			RuleNumber:   &ruleNumber,
+			RuleNumber:   persistedRule.RuleNumber,
 		}
 
 		req := a.client.DeleteNetworkAclEntryRequest(&input)
@@ -102,4 +101,35 @@ func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 	}
 
 	return domain.AdapterResult{}
+}
+
+func (a *adapter) getPersistedRules() (rules []ec2.NetworkAclEntry) {
+	input := &ec2.DescribeNetworkAclsInput{
+		NetworkAclIds: []string{
+			a.NetworkAclId,
+			//	todo filter by gatekeeper tag?
+		},
+	}
+
+	req := a.client.DescribeNetworkAclsRequest(input)
+	resp, err := req.Send(context.Background())
+	if err != nil {
+		// todo log
+		return
+	}
+
+	// We can assume we will only have 1 network ACL in here because we filtered for only 1
+	rules = resp.NetworkAcls[0].Entries
+	return
+}
+
+func (a *adapter) findRuleInPersistedRules(rule domain.Rule, persistedRules []ec2.NetworkAclEntry) *ec2.NetworkAclEntry {
+	for _, persistedRule := range persistedRules {
+		cidrs := []string{*persistedRule.CidrBlock, *persistedRule.Ipv6CidrBlock}
+		_, found := Find(cidrs, rule.IPNet.IP.String())
+		if found {
+			return &persistedRule
+		}
+	}
+	return nil
 }
