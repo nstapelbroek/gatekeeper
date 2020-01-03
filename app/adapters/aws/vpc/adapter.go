@@ -5,7 +5,57 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/nstapelbroek/gatekeeper/domain"
+	"strconv"
+	"strings"
 )
+
+type aclEntryCollection struct {
+	rules map[string]int64
+}
+
+func NewACLEntryCollection(entries []ec2.NetworkAclEntry) *aclEntryCollection {
+	c := &aclEntryCollection{rules: make(map[string]int64)}
+	for _, aclEntry := range entries {
+		if *aclEntry.Egress == true || aclEntry.RuleAction != ec2.RuleActionAllow {
+			continue
+		}
+		c.rules[c.aclEntryToUniqueKey(aclEntry)] = *aclEntry.RuleNumber
+	}
+
+	return c
+}
+
+func (c *aclEntryCollection) FindAclRuleNumberByRule(rule domain.Rule) *int64 {
+	ruleNumber, exists := c.rules[c.ruleToUniqueKey(rule)]
+	if exists {
+		return &ruleNumber
+	}
+	return nil
+}
+
+func (c *aclEntryCollection) ruleToUniqueKey(rule domain.Rule) string {
+	return strings.Join([]string{
+		rule.IPNet.String(),
+		strconv.Itoa(rule.Protocol.ProtocolNumber()),
+		strconv.Itoa(rule.Port.BeginPort),
+		strconv.Itoa(rule.Port.EndPort),
+	}, "-")
+}
+
+func (c *aclEntryCollection) aclEntryToUniqueKey(entry ec2.NetworkAclEntry) string {
+	cidr := entry.Ipv6CidrBlock
+	if cidr == nil {
+		cidr = entry.CidrBlock
+	}
+
+	return strings.Join([]string{
+		*cidr,
+		*entry.Protocol,
+		strconv.FormatInt(*entry.PortRange.From, 10),
+		strconv.FormatInt(*entry.PortRange.To, 10)},
+		"-",
+	)
+}
 
 type adapter struct {
 	client          *ec2.Client
@@ -29,26 +79,41 @@ func (a *adapter) ToString() string {
 	return "aws-network-acl"
 }
 
+func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
+	for _, rule := range rules {
+		input := a.buildCreateAclEntryRequest(rule)
+		req := a.client.CreateNetworkAclEntryRequest(input)
+		_, _ = req.Send(context.TODO()) // TODO error handling
+	}
+
+	return domain.AdapterResult{}
+}
+
+func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
+	currentEntries := a.getPersistedAclEntries()
+	for _, rule := range rules {
+		ruleNumber := currentEntries.FindAclRuleNumberByRule(rule)
+		if ruleNumber == nil {
+			// todo log that a rule could not be found and is therefore ignored in the cleanup
+			continue
+		}
+
+		input := ec2.DeleteNetworkAclEntryInput{
+			Egress:       aws.Bool(rule.Direction.IsOutbound()),
+			NetworkAclId: aws.String(a.NetworkAclId),
+			RuleNumber:   ruleNumber,
+		}
+
+		req := a.client.DeleteNetworkAclEntryRequest(&input)
+		_, _ = req.Send(context.TODO()) // TODO error handling
+	}
+
+	return domain.AdapterResult{}
+}
+
 func (a *adapter) getNextRuleNumber() *int64 {
 	a.ruleStepsTaken = a.ruleStepsTaken + 1
 	return aws.Int64(a.startRuleNumber + int64(a.ruleStepSize*a.ruleStepsTaken))
-}
-
-func (a *adapter) getProtocolNumber(protocol domain.Protocol) *string {
-	if protocol == domain.TCP {
-		return aws.String("6")
-	}
-
-	if protocol == domain.UDP {
-		return aws.String("17")
-	}
-
-	if protocol == domain.ICMP {
-		return aws.String("1")
-	}
-
-	// Fallback to all protocols
-	return aws.String("-1")
 }
 
 func (a *adapter) buildCreateAclEntryRequest(rule domain.Rule) *ec2.CreateNetworkAclEntryInput {
@@ -56,7 +121,7 @@ func (a *adapter) buildCreateAclEntryRequest(rule domain.Rule) *ec2.CreateNetwor
 		Egress:       aws.Bool(rule.Direction.IsOutbound()),
 		NetworkAclId: aws.String(a.NetworkAclId),
 		PortRange:    &ec2.PortRange{From: aws.Int64(int64(rule.Port.BeginPort)), To: aws.Int64(int64(rule.Port.EndPort))},
-		Protocol:     a.getProtocolNumber(rule.Protocol),
+		Protocol:     aws.String(strconv.Itoa(rule.Protocol.ProtocolNumber())),
 		RuleAction:   "allow",
 		RuleNumber:   a.getNextRuleNumber(),
 	}
@@ -70,66 +135,24 @@ func (a *adapter) buildCreateAclEntryRequest(rule domain.Rule) *ec2.CreateNetwor
 	return &input
 }
 
-func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
-	for _, rule := range rules {
-		input := a.buildCreateAclEntryRequest(rule)
-		req := a.client.CreateNetworkAclEntryRequest(input)
-		_, _ = req.Send(context.TODO()) // TODO error handling
-	}
-
-	return domain.AdapterResult{}
-}
-
-func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
-	currentRules := a.getPersistedRules()
-	for _, rule := range rules {
-		persistedRule := a.findRuleInPersistedRules(rule, currentRules)
-		if persistedRule == nil {
-			// todo log
-			continue
-		}
-
-		input := ec2.DeleteNetworkAclEntryInput{
-			Egress:       aws.Bool(rule.Direction.IsOutbound()),
-			NetworkAclId: aws.String(a.NetworkAclId),
-			RuleNumber:   persistedRule.RuleNumber,
-		}
-
-		req := a.client.DeleteNetworkAclEntryRequest(&input)
-		_, _ = req.Send(context.TODO()) // TODO error handling
-		delete(a.ruleNumbersIndex, rule.String())
-	}
-
-	return domain.AdapterResult{}
-}
-
-func (a *adapter) getPersistedRules() (rules []ec2.NetworkAclEntry) {
+func (a *adapter) getPersistedAclEntries() *aclEntryCollection {
 	input := &ec2.DescribeNetworkAclsInput{
 		NetworkAclIds: []string{
 			a.NetworkAclId,
-			//	todo filter by gatekeeper tag?
+		},
+		Filters: []ec2.Filter{
+			{
+				Name:   aws.String("entry.rule-action"),
+				Values: []string{"allow"},
+			},
 		},
 	}
 
 	req := a.client.DescribeNetworkAclsRequest(input)
 	resp, err := req.Send(context.Background())
-	if err != nil {
-		// todo log
-		return
+	if err != nil || len(resp.NetworkAcls) == 0 {
+		return NewACLEntryCollection(nil) // todo log error
 	}
 
-	// We can assume we will only have 1 network ACL in here because we filtered for only 1
-	rules = resp.NetworkAcls[0].Entries
-	return
-}
-
-func (a *adapter) findRuleInPersistedRules(rule domain.Rule, persistedRules []ec2.NetworkAclEntry) *ec2.NetworkAclEntry {
-	for _, persistedRule := range persistedRules {
-		cidrs := []string{*persistedRule.CidrBlock, *persistedRule.Ipv6CidrBlock}
-		_, found := Find(cidrs, rule.IPNet.IP.String())
-		if found {
-			return &persistedRule
-		}
-	}
-	return nil
+	return NewACLEntryCollection(resp.NetworkAcls[0].Entries) // Assume only 1 result because we filtered
 }
