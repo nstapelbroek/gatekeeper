@@ -14,7 +14,7 @@ type aclEntryCollection struct {
 func NewACLEntryCollection(entries []ec2.NetworkAclEntry) *aclEntryCollection {
 	c := &aclEntryCollection{rules: make(map[string]int64)}
 	for _, aclEntry := range entries {
-		if *aclEntry.Egress == true || aclEntry.RuleAction != ec2.RuleActionAllow {
+		if *aclEntry.Egress || aclEntry.RuleAction != ec2.RuleActionAllow {
 			continue
 		}
 		c.rules[c.aclEntryToUniqueKey(aclEntry)] = *aclEntry.RuleNumber

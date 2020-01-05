@@ -46,7 +46,7 @@ func TestACLEntryCollectionCanMapIpv4AclToDomainRule(t *testing.T) {
 		Direction: domain.Inbound,
 		Protocol:  domain.TCP,
 		IPNet:     net.IPNet{IP: ip, Mask: ipNet.Mask},
-		Port:      domain.PortRange{20, 22},
+		Port:      domain.PortRange{BeginPort: 20, EndPort: 22},
 	}
 	aclEntry := ec2.NetworkAclEntry{
 		CidrBlock:  &cidr,
@@ -73,7 +73,7 @@ func TestACLEntryCollectionCanMapIpv6AclToDomainRule(t *testing.T) {
 		Direction: domain.Inbound,
 		Protocol:  domain.TCP,
 		IPNet:     net.IPNet{IP: ip, Mask: ipNet.Mask},
-		Port:      domain.PortRange{20, 22},
+		Port:      domain.PortRange{BeginPort: 20, EndPort: 22},
 	}
 	aclEntry := ec2.NetworkAclEntry{
 		Ipv6CidrBlock: &cidr,
