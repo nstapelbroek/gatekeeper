@@ -42,7 +42,7 @@ func NewAdapterFactory(config *viper.Viper) (*AdapterFactory, error) {
 			f.adapterCollection = append(f.adapterCollection, ec2.NewAWSSecurityGroupAdapter(awsClient, awsSecurityGroupId))
 		}
 		if awsNetworkACLId := config.GetString("aws_network_acl_id"); len(awsNetworkACLId) > 0 {
-			f.adapterCollection = append(f.adapterCollection, vpc.NewAWSNetworkACLAdapter(awsClient, awsNetworkACLId, config.GetInt64("aws_network_acl_start_number")))
+			f.adapterCollection = append(f.adapterCollection, vpc.NewAWSNetworkACLAdapter(awsClient, awsNetworkACLId, config.GetString("aws_network_acl_rule_number_range")))
 		}
 	}
 

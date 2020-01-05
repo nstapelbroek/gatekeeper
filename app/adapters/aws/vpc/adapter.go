@@ -2,27 +2,34 @@ package vpc
 
 import (
 	"context"
+	"errors"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"strconv"
+	"strings"
 )
 
 type adapter struct {
-	client          *ec2.Client
-	NetworkAclId    string
-	startRuleNumber int64
-	ruleStepsTaken  int
-	ruleStepSize    int
+	client           *ec2.Client
+	networkAclId     string
+	allowedRuleRange aclRuleNumberRange
 }
 
-func NewAWSNetworkACLAdapter(client *ec2.Client, networkAclId string, startRuleNumber int64) *adapter {
+type aclRuleNumberRange struct {
+	min int64
+	max int64
+}
+
+func NewAWSNetworkACLAdapter(client *ec2.Client, networkAclId string, numberRange string) *adapter {
+	nRange := strings.SplitN(numberRange, "-", 2)
+	min, _ := strconv.ParseInt(nRange[0], 10, 0)
+	max, _ := strconv.ParseInt(nRange[1], 10, 0)
+
 	return &adapter{
-		client:          client,
-		NetworkAclId:    networkAclId,
-		startRuleNumber: startRuleNumber,
-		ruleStepsTaken:  0,
-		ruleStepSize:    10,
+		client:           client,
+		networkAclId:     networkAclId,
+		allowedRuleRange: aclRuleNumberRange{min: min, max: max},
 	}
 }
 
@@ -31,9 +38,33 @@ func (a *adapter) ToString() string {
 }
 
 func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
-	for _, rule := range rules {
-		input := a.buildCreateAclEntryRequest(rule)
-		req := a.client.CreateNetworkAclEntryRequest(input)
+	currentEntries := a.getPersistedAclEntries()
+	availableRuleNumbers, err := a.calculateAvailableRuleNumbers(currentEntries, len(rules))
+	if err != nil {
+		return domain.AdapterResult{Error: err}
+	}
+
+	for i, rule := range rules {
+		if currentEntries.FindAclRuleNumberByRule(rule) != nil {
+			continue // todo log
+		}
+
+		input := ec2.CreateNetworkAclEntryInput{
+			CidrBlock:    aws.String(rule.IPNet.String()),
+			Egress:       aws.Bool(rule.Direction.IsOutbound()),
+			NetworkAclId: aws.String(a.networkAclId),
+			PortRange:    &ec2.PortRange{From: aws.Int64(int64(rule.Port.BeginPort)), To: aws.Int64(int64(rule.Port.EndPort))},
+			Protocol:     aws.String(strconv.Itoa(rule.Protocol.ProtocolNumber())),
+			RuleAction:   "allow",
+			RuleNumber:   &availableRuleNumbers[i],
+		}
+
+		if rule.IPNet.IP.To4() == nil {
+			input.Ipv6CidrBlock = input.CidrBlock
+			input.CidrBlock = nil
+		}
+
+		req := a.client.CreateNetworkAclEntryRequest(&input)
 		_, _ = req.Send(context.TODO()) // TODO error handling
 	}
 
@@ -51,7 +82,7 @@ func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 
 		input := ec2.DeleteNetworkAclEntryInput{
 			Egress:       aws.Bool(rule.Direction.IsOutbound()),
-			NetworkAclId: aws.String(a.NetworkAclId),
+			NetworkAclId: aws.String(a.networkAclId),
 			RuleNumber:   ruleNumber,
 		}
 
@@ -62,34 +93,10 @@ func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 	return domain.AdapterResult{}
 }
 
-func (a *adapter) getNextRuleNumber() *int64 {
-	a.ruleStepsTaken = a.ruleStepsTaken + 1
-	return aws.Int64(a.startRuleNumber + int64(a.ruleStepSize*a.ruleStepsTaken))
-}
-
-func (a *adapter) buildCreateAclEntryRequest(rule domain.Rule) *ec2.CreateNetworkAclEntryInput {
-	input := ec2.CreateNetworkAclEntryInput{
-		Egress:       aws.Bool(rule.Direction.IsOutbound()),
-		NetworkAclId: aws.String(a.NetworkAclId),
-		PortRange:    &ec2.PortRange{From: aws.Int64(int64(rule.Port.BeginPort)), To: aws.Int64(int64(rule.Port.EndPort))},
-		Protocol:     aws.String(strconv.Itoa(rule.Protocol.ProtocolNumber())),
-		RuleAction:   "allow",
-		RuleNumber:   a.getNextRuleNumber(),
-	}
-
-	if rule.IPNet.IP.To4() == nil {
-		input.Ipv6CidrBlock = aws.String(rule.IPNet.String())
-	} else {
-		input.CidrBlock = aws.String(rule.IPNet.String())
-	}
-
-	return &input
-}
-
 func (a *adapter) getPersistedAclEntries() *aclEntryCollection {
 	input := &ec2.DescribeNetworkAclsInput{
 		NetworkAclIds: []string{
-			a.NetworkAclId,
+			a.networkAclId,
 		},
 		Filters: []ec2.Filter{
 			{
@@ -106,4 +113,26 @@ func (a *adapter) getPersistedAclEntries() *aclEntryCollection {
 	}
 
 	return NewACLEntryCollection(resp.NetworkAcls[0].Entries) // Assume only 1 result because we filtered
+}
+
+func (a *adapter) calculateAvailableRuleNumbers(entries *aclEntryCollection, requestedCount int) ([]int64, error) {
+	takenNumbers := make(map[int64]bool)
+	var availableNumbers []int64
+	for _, ruleNumber := range entries.rules {
+		if ruleNumber >= a.allowedRuleRange.min && ruleNumber <= a.allowedRuleRange.max {
+			takenNumbers[ruleNumber] = true
+		}
+	}
+
+	for availableNumber := a.allowedRuleRange.min; availableNumber < a.allowedRuleRange.max; availableNumber++ {
+		if len(availableNumbers) == requestedCount {
+			return availableNumbers, nil
+		}
+
+		if _, ok := takenNumbers[availableNumber]; !ok {
+			availableNumbers = append(availableNumbers, availableNumber)
+		}
+	}
+
+	return availableNumbers, errors.New("ran out of acl rule numbers to allocate")
 }
