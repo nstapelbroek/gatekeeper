@@ -1,5 +1,11 @@
 # Gatekeeper
 
+[![Build Status](https://travis-ci.org/nstapelbroek/gatekeeper.svg?branch=latest)](https://travis-ci.org/nstapelbroek/gatekeeper)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nstapelbroek/gatekeeper)](https://goreportcard.com/report/github.com/nstapelbroek/gatekeeper)
+[![Image details](https://images.microbadger.com/badges/image/nstapelbroek/gatekeeper.svg)](https://hub.docker.com/r/nstapelbroek/gatekeeper/tags/)
+[![Image git ref](https://images.microbadger.com/badges/commit/nstapelbroek/gatekeeper.svg)](https://microbadger.com/images/nstapelbroek/gatekeeper/)
+[![GitHub license](https://img.shields.io/github/license/nstapelbroek/gatekeeper.svg)](https://github.com/nstapelbroek/gatekeeper/blob/master/LICENSE)
+
 Temporary allow access to your cloud infrastructure by signaling the gatekeeper. Allowing your build pipeline to deploy behind a firewall.
 
 ## Supported environments
