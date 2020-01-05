@@ -55,3 +55,17 @@ func (p Protocol) String() string {
 		return ""
 	}
 }
+
+// ProtocolNumber() will convert the object to an IANA protocol number, see https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+func (p Protocol) ProtocolNumber() int {
+	switch p {
+	case TCP:
+		return 6
+	case UDP:
+		return 17
+	case ICMP:
+		return 1
+	default:
+		return -1
+	}
+}

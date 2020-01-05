@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -34,4 +35,22 @@ func TestNewProtocolFromInvalidString(t *testing.T) {
 	if err != ErrInvalidProtocolString {
 		t.Errorf("Protocol constructor did not return the expected error")
 	}
+}
+
+func TestTCPProtocolToIANANumber(t *testing.T) {
+	p := Protocol(TCP)
+
+	assert.Equal(t, 6, p.ProtocolNumber())
+}
+
+func TestUDPProtocolToIANANumber(t *testing.T) {
+	p := Protocol(UDP)
+
+	assert.Equal(t, 17, p.ProtocolNumber())
+}
+
+func TestICMProtocolToIANANumber(t *testing.T) {
+	p := Protocol(ICMP)
+
+	assert.Equal(t, 1, p.ProtocolNumber())
 }
