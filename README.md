@@ -4,12 +4,12 @@ Temporary allow access to your cloud infrastructure by signaling the gatekeeper.
 
 ## Supported environments
 
-| Supported status | Provider | Product Name | Required Environment Variables |
-|---    |---    |---    |---    |
-| :white_check_mark: | Vultr | Firewall | `VULTR_PERSONAL_ACCESS_TOKEN`, `VULTR_FIREWALL_ID`|
-| :white_check_mark: | Digitalocean | Cloud Firewalls | `DIGITALOCEAN_PERSONAL_ACCESS_TOKEN`, `DIGITALOCEAN_FIREWALL_ID` |
-| :white_check_mark: | AWS | EC2 Security Groups | `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION`, `AWS_SECURITY_GROUP_ID` |
-| :white_check_mark: | AWS | VPC Network ACLs | `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION`, `AWS_NETWORK_ACL_ID` |
+| Provider | Product Name | Required Environment Variables |
+|---    |---    |---    |
+| Vultr | Firewall | `VULTR_PERSONAL_ACCESS_TOKEN`, `VULTR_FIREWALL_ID`|
+| Digitalocean | Cloud Firewalls | `DIGITALOCEAN_PERSONAL_ACCESS_TOKEN`, `DIGITALOCEAN_FIREWALL_ID` |
+| AWS | EC2 Security Groups | `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION`, `AWS_SECURITY_GROUP_ID` |
+| AWS | VPC Network ACLs | `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION`, `AWS_NETWORK_ACL_ID` |
 
 ## Getting Started
 
