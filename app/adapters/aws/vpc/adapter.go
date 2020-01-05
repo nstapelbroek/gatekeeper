@@ -46,7 +46,7 @@ func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 
 	for i, rule := range rules {
 		if currentEntries.FindAclRuleNumberByRule(rule) != nil {
-			continue // todo log
+			return domain.AdapterResult{Error: errors.New("rule is already set")}
 		}
 
 		input := ec2.CreateNetworkAclEntryInput{
@@ -65,7 +65,10 @@ func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 		}
 
 		req := a.client.CreateNetworkAclEntryRequest(&input)
-		_, _ = req.Send(context.TODO()) // TODO error handling
+		_, err = req.Send(context.TODO())
+		if err != nil {
+			return domain.AdapterResult{Error: err}
+		}
 	}
 
 	return domain.AdapterResult{}
@@ -87,7 +90,7 @@ func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 		}
 
 		req := a.client.DeleteNetworkAclEntryRequest(&input)
-		_, _ = req.Send(context.TODO()) // TODO error handling
+		_, _ = req.Send(context.TODO()) // TODO error logging when it's a background task.
 	}
 
 	return domain.AdapterResult{}
