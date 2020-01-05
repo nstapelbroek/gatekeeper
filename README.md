@@ -38,7 +38,7 @@ DIGITALOCEAN_PERSONAL_ACCESS_TOKEN=REPLACE_ME DIGITALOCEAN_FIREWALL_ID=REPLACE_M
 After installing and running the application you can fire an HTTP POST towards it to temporary whitelist your given IP at the cloud provider.
 By default the gatekeeper will open TCP port 22 (for SSH). You can change the port of protocol in the [configuration](#configuration).
 
-An simple example:
+A simple example:
 ```bash
 curl -X POST http://localhost:8080
 ```
