@@ -5,11 +5,12 @@ import (
 	"go.uber.org/zap"
 	"time"
 )
-
+// RegisterAccessLogMiddleware will setup request logging in Extended Log Format (ELF).
 func RegisterAccessLogMiddleware(app *gin.Engine, logger *zap.Logger) {
 	app.Use(LogRequests(logger))
 }
 
+// LogRequests is a wrapper around the handlerChain, writing an Extended Log Format entry on handled HTTP request
 func LogRequests(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		startTime := time.Now()

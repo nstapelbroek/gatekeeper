@@ -13,6 +13,7 @@ import (
 	"os"
 )
 
+// App is a struct holding references to every gatekeeper component
 type App struct {
 	router            *gin.Engine
 	config            *viper.Viper
@@ -22,6 +23,7 @@ type App struct {
 	//register       *domain.Register
 }
 
+// NewApp is a constructor method for App
 func NewApp(c *viper.Viper) *App {
 	a := App{
 		config: c,
@@ -93,6 +95,7 @@ func bootRoutes(a *App) {
 	a.router.NoMethod(handlers.MethodNotAllowed)
 }
 
+// Run will start the HTTP server of the app instance
 func (a App) Run() (err error) {
 	port := a.config.GetInt("http_port")
 	a.logger.Info("Starting gatekeeper", zap.Int("port", port))

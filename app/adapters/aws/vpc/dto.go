@@ -7,12 +7,14 @@ import (
 	"strings"
 )
 
-type aclEntryCollection struct {
+// ACLEntryCollection is a collection object for ACLEntryRuleNumbers
+type ACLEntryCollection struct {
 	rules map[string]int64
 }
 
-func NewACLEntryCollection(entries []ec2.NetworkAclEntry) *aclEntryCollection {
-	c := &aclEntryCollection{rules: make(map[string]int64)}
+// NewACLEntryCollection is a constructor for ACLEntryCollection
+func NewACLEntryCollection(entries []ec2.NetworkAclEntry) *ACLEntryCollection {
+	c := &ACLEntryCollection{rules: make(map[string]int64)}
 	for _, aclEntry := range entries {
 		if *aclEntry.Egress || aclEntry.RuleAction != ec2.RuleActionAllow {
 			continue
@@ -23,7 +25,8 @@ func NewACLEntryCollection(entries []ec2.NetworkAclEntry) *aclEntryCollection {
 	return c
 }
 
-func (c *aclEntryCollection) FindAclRuleNumberByRule(rule domain.Rule) *int64 {
+// FindACLRuleNumberByRule will map a domain.rule to an ACLEntryRuleNumber in the internal collection
+func (c *ACLEntryCollection) FindACLRuleNumberByRule(rule domain.Rule) *int64 {
 	ruleNumber, exists := c.rules[c.ruleToUniqueKey(rule)]
 	if exists {
 		return &ruleNumber
@@ -31,7 +34,7 @@ func (c *aclEntryCollection) FindAclRuleNumberByRule(rule domain.Rule) *int64 {
 	return nil
 }
 
-func (c *aclEntryCollection) ruleToUniqueKey(rule domain.Rule) string {
+func (c *ACLEntryCollection) ruleToUniqueKey(rule domain.Rule) string {
 	return strings.Join([]string{
 		rule.IPNet.String(),
 		strconv.Itoa(rule.Protocol.ProtocolNumber()),
@@ -40,7 +43,7 @@ func (c *aclEntryCollection) ruleToUniqueKey(rule domain.Rule) string {
 	}, "-")
 }
 
-func (c *aclEntryCollection) aclEntryToUniqueKey(entry ec2.NetworkAclEntry) string {
+func (c *ACLEntryCollection) aclEntryToUniqueKey(entry ec2.NetworkAclEntry) string {
 	cidr := entry.Ipv6CidrBlock
 	if cidr == nil {
 		cidr = entry.CidrBlock

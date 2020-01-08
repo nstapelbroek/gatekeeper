@@ -6,29 +6,31 @@ import (
 	"time"
 )
 
+// OpenCommand will act as a command object we can pass around in the app
 type OpenCommand struct {
 	Rules     []Rule
 	Timeout   time.Duration
-	IpAddress net.IPNet
+	IPAddress net.IPNet
 }
 
-func NewOpenCommand(ip string, timeout int64, boilerplateRules []Rule) *OpenCommand {
+// NewOpenCommand is a constructor for the OpenCommand
+func NewOpenCommand(IP string, timeout int64, boilerplateRules []Rule) *OpenCommand {
 	var o OpenCommand
 
-	o.IpAddress = parseIp(ip)
+	o.IPAddress = parseIP(IP)
 	o.Timeout = parseTimeout(timeout)
-	o.Rules = parseRules(o.IpAddress, boilerplateRules)
+	o.Rules = parseRules(o.IPAddress, boilerplateRules)
 
 	return &o
 }
 
-func parseIp(stringIp string) net.IPNet {
-	if strings.Contains(stringIp, "/") {
-		ip, ipNet, _ := net.ParseCIDR(stringIp)
+func parseIP(stringIP string) net.IPNet {
+	if strings.Contains(stringIP, "/") {
+		ip, ipNet, _ := net.ParseCIDR(stringIP)
 		return net.IPNet{IP: ip, Mask: ipNet.Mask}
 	}
 
-	ip := net.ParseIP(stringIp)
+	ip := net.ParseIP(stringIP)
 	if ip.To4() != nil {
 		return net.IPNet{IP: ip, Mask: net.CIDRMask(32, 32)}
 	}

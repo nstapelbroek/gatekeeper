@@ -10,9 +10,10 @@ import (
 	"strings"
 )
 
-type adapter struct {
+// Adapter is a AWS VPC API implementation of the domain.Adapter interface
+type Adapter struct {
 	client           *ec2.Client
-	networkAclId     string
+	networkACLID     string
 	allowedRuleRange aclRuleNumberRange
 }
 
@@ -21,38 +22,39 @@ type aclRuleNumberRange struct {
 	max int64
 }
 
-func NewAWSNetworkACLAdapter(client *ec2.Client, networkAclId string, numberRange string) *adapter {
+// NewAWSNetworkACLAdapter is a constructor for Adapter
+func NewAWSNetworkACLAdapter(client *ec2.Client, networkACLID string, numberRange string) *Adapter {
 	nRange := strings.SplitN(numberRange, "-", 2)
 	min, _ := strconv.ParseInt(nRange[0], 10, 0)
 	max, _ := strconv.ParseInt(nRange[1], 10, 0)
 
-	return &adapter{
+	return &Adapter{
 		client:           client,
-		networkAclId:     networkAclId,
+		networkACLID:     networkACLID,
 		allowedRuleRange: aclRuleNumberRange{min: min, max: max},
 	}
 }
 
-func (a *adapter) ToString() string {
+func (a *Adapter) ToString() string {
 	return "aws-network-acl"
 }
 
-func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
-	currentEntries := a.getPersistedAclEntries()
+func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
+	currentEntries := a.getPersistedACLEntries()
 	availableRuleNumbers, err := a.calculateAvailableRuleNumbers(currentEntries, len(rules))
 	if err != nil {
 		return domain.AdapterResult{Error: err}
 	}
 
 	for i, rule := range rules {
-		if currentEntries.FindAclRuleNumberByRule(rule) != nil {
+		if currentEntries.FindACLRuleNumberByRule(rule) != nil {
 			return domain.AdapterResult{Error: errors.New("rule is already set")}
 		}
 
 		input := ec2.CreateNetworkAclEntryInput{
 			CidrBlock:    aws.String(rule.IPNet.String()),
 			Egress:       aws.Bool(rule.Direction.IsOutbound()),
-			NetworkAclId: aws.String(a.networkAclId),
+			NetworkAclId: aws.String(a.networkACLID),
 			PortRange:    &ec2.PortRange{From: aws.Int64(int64(rule.Port.BeginPort)), To: aws.Int64(int64(rule.Port.EndPort))},
 			Protocol:     aws.String(strconv.Itoa(rule.Protocol.ProtocolNumber())),
 			RuleAction:   "allow",
@@ -74,10 +76,10 @@ func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 	return domain.AdapterResult{}
 }
 
-func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
-	currentEntries := a.getPersistedAclEntries()
+func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
+	currentEntries := a.getPersistedACLEntries()
 	for _, rule := range rules {
-		ruleNumber := currentEntries.FindAclRuleNumberByRule(rule)
+		ruleNumber := currentEntries.FindACLRuleNumberByRule(rule)
 		if ruleNumber == nil {
 			// todo log that a rule could not be found and is therefore ignored in the cleanup
 			continue
@@ -85,7 +87,7 @@ func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 
 		input := ec2.DeleteNetworkAclEntryInput{
 			Egress:       aws.Bool(rule.Direction.IsOutbound()),
-			NetworkAclId: aws.String(a.networkAclId),
+			NetworkAclId: aws.String(a.networkACLID),
 			RuleNumber:   ruleNumber,
 		}
 
@@ -96,10 +98,10 @@ func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 	return domain.AdapterResult{}
 }
 
-func (a *adapter) getPersistedAclEntries() *aclEntryCollection {
+func (a *Adapter) getPersistedACLEntries() *ACLEntryCollection {
 	input := &ec2.DescribeNetworkAclsInput{
 		NetworkAclIds: []string{
-			a.networkAclId,
+			a.networkACLID,
 		},
 		Filters: []ec2.Filter{
 			{
@@ -118,7 +120,7 @@ func (a *adapter) getPersistedAclEntries() *aclEntryCollection {
 	return NewACLEntryCollection(resp.NetworkAcls[0].Entries) // Assume only 1 result because we filtered
 }
 
-func (a *adapter) calculateAvailableRuleNumbers(entries *aclEntryCollection, requestedCount int) ([]int64, error) {
+func (a *Adapter) calculateAvailableRuleNumbers(entries *ACLEntryCollection, requestedCount int) ([]int64, error) {
 	takenNumbers := make(map[int64]bool)
 	var availableNumbers []int64
 	for _, ruleNumber := range entries.rules {

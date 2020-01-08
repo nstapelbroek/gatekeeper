@@ -7,16 +7,18 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type adapter struct {
-	client      *godo.Client
+// Adapter is a DigitalOcean API implementation of the domain.Adapter interface
+type Adapter struct {
+	client     *godo.Client
 	accessToken string
-	firewallId  string
+	firewallID string
 }
 
-func NewDigitalOceanAdapter(personalAccessToken string, firewallIdentifier string) *adapter {
-	adapter := new(adapter)
+// NewDigitalOceanAdapter is a constructor for Adapter
+func NewDigitalOceanAdapter(personalAccessToken string, firewallIdentifier string) *Adapter {
+	adapter := new(Adapter)
 	adapter.accessToken = personalAccessToken
-	adapter.firewallId = firewallIdentifier
+	adapter.firewallID = firewallIdentifier
 
 	oauthClient := oauth2.NewClient(context.Background(), adapter)
 	doClient := godo.NewClient(oauthClient)
@@ -25,7 +27,8 @@ func NewDigitalOceanAdapter(personalAccessToken string, firewallIdentifier strin
 	return adapter
 }
 
-func (a *adapter) Token() (*oauth2.Token, error) {
+// Token is used to provide the DigitalOcean API client with an access token
+func (a *Adapter) Token() (*oauth2.Token, error) {
 	token := &oauth2.Token{
 		AccessToken: a.accessToken,
 	}
@@ -33,11 +36,11 @@ func (a *adapter) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
-func (a *adapter) ToString() string {
+func (a *Adapter) ToString() string {
 	return "digitalocean"
 }
 
-func (a *adapter) newRequestFromDomainRule(rules []domain.Rule) *godo.FirewallRulesRequest {
+func (a *Adapter) newRequestFromDomainRule(rules []domain.Rule) *godo.FirewallRulesRequest {
 	rulesRequest := &godo.FirewallRulesRequest{
 		InboundRules: []godo.InboundRule{},
 	}
@@ -56,14 +59,14 @@ func (a *adapter) newRequestFromDomainRule(rules []domain.Rule) *godo.FirewallRu
 	return rulesRequest
 }
 
-func (a *adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
-	_, err := a.client.Firewalls.AddRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rules))
+func (a *Adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
+	_, err := a.client.Firewalls.AddRules(context.TODO(), a.firewallID, a.newRequestFromDomainRule(rules))
 
 	return domain.AdapterResult{Error: err}
 }
 
-func (a *adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
-	_, err := a.client.Firewalls.RemoveRules(context.TODO(), a.firewallId, a.newRequestFromDomainRule(rules))
+func (a *Adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
+	_, err := a.client.Firewalls.RemoveRules(context.TODO(), a.firewallID, a.newRequestFromDomainRule(rules))
 
 	return domain.AdapterResult{Error: err}
 }
