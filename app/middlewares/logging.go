@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 	"time"
 )
+
 // RegisterAccessLogMiddleware will setup request logging in Extended Log Format (ELF).
 func RegisterAccessLogMiddleware(app *gin.Engine, logger *zap.Logger) {
 	app.Use(LogRequests(logger))
