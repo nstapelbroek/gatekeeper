@@ -18,12 +18,12 @@ type ruleFunction func(rule domain.Rule) error
 func NewVultrAdapter(apiKey string, firewallGroupID string) *Adapter {
 	vultrClient := lib.NewClient(apiKey, nil)
 
-	adapter := new(Adapter)
-	adapter.client = vultrClient
-	adapter.firewallGroupID = firewallGroupID
-	adapter.ruleNumbersIndex = make(map[string]int)
+	a := new(Adapter)
+	a.client = vultrClient
+	a.firewallGroupID = firewallGroupID
+	a.ruleNumbersIndex = make(map[string]int)
 
-	return adapter
+	return a
 }
 
 func (a *Adapter) ToString() string {
