@@ -26,6 +26,7 @@ func NewVultrAdapter(apiKey string, firewallGroupID string) *Adapter {
 	return a
 }
 
+// ToString satisfies the domain.Adapter interface
 func (a *Adapter) ToString() string {
 	return "vultr"
 }
@@ -43,10 +44,12 @@ func (a *Adapter) executeForEachRule(rules []domain.Rule, function ruleFunction)
 	return domain.AdapterResult{}
 }
 
+// CreateRules satisfies the domain.Adapter interface
 func (a *Adapter) CreateRules(rules []domain.Rule) domain.AdapterResult {
 	return a.executeForEachRule(rules, a.createRule)
 }
 
+// DeleteRules satisfies the domain.Adapter interface
 func (a *Adapter) DeleteRules(rules []domain.Rule) domain.AdapterResult {
 	return a.executeForEachRule(rules, a.deleteRule)
 }

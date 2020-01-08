@@ -21,6 +21,7 @@ func NewAWSSecurityGroupAdapter(client *ec2.Client, securityGroupID string) *Ada
 	}
 }
 
+// ToString satisfies the domain.Adapter interface
 func (a *Adapter) ToString() string {
 	return "aws-security-group"
 }
@@ -46,6 +47,7 @@ func (a *Adapter) createIPPermissions(rules []domain.Rule) []ec2.IpPermission {
 	return permissions
 }
 
+// CreateRules satisfies the domain.Adapter interface
 func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
 	input := ec2.AuthorizeSecurityGroupIngressInput{
 		IpPermissions: a.createIPPermissions(rules),
@@ -63,6 +65,7 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 	return
 }
 
+// DeleteRules satisfies the domain.Adapter interface
 func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
 	input := ec2.RevokeSecurityGroupIngressInput{
 		IpPermissions: a.createIPPermissions(rules),

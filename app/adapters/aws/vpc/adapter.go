@@ -35,10 +35,12 @@ func NewAWSNetworkACLAdapter(client *ec2.Client, networkACLID string, numberRang
 	}
 }
 
+// ToString satisfies the domain.Adapter interface
 func (a *Adapter) ToString() string {
 	return "aws-network-acl"
 }
 
+// CreateRules satisfies the domain.Adapter interface
 func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
 	currentEntries := a.getPersistedACLEntries()
 	availableRuleNumbers, err := a.calculateAvailableRuleNumbers(currentEntries, len(rules))
@@ -76,6 +78,7 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 	return domain.AdapterResult{}
 }
 
+// DeleteRules satisfies the domain.Adapter interface
 func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
 	currentEntries := a.getPersistedACLEntries()
 	for _, rule := range rules {
