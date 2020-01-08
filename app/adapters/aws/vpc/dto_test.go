@@ -21,7 +21,7 @@ func TestNewACLEntryCollectionWithEmptyData(t *testing.T) {
 
 	assert.NotNil(t, collection.rules)
 	assert.Empty(t, collection.rules)
-	assert.Nil(t, collection.FindAclRuleNumberByRule(rule))
+	assert.Nil(t, collection.FindACLRuleNumberByRule(rule))
 }
 
 func TestNewACLEntryCollectionWithNil(t *testing.T) {
@@ -35,7 +35,7 @@ func TestNewACLEntryCollectionWithNil(t *testing.T) {
 
 	assert.NotNil(t, collection.rules)
 	assert.Empty(t, collection.rules)
-	assert.Nil(t, collection.FindAclRuleNumberByRule(rule))
+	assert.Nil(t, collection.FindACLRuleNumberByRule(rule))
 }
 
 func TestACLEntryCollectionCanMapIpv4AclToDomainRule(t *testing.T) {
@@ -61,7 +61,7 @@ func TestACLEntryCollectionCanMapIpv4AclToDomainRule(t *testing.T) {
 
 	assert.NotNil(t, collection.rules)
 	assert.NotEmpty(t, collection.rules)
-	assert.Equal(t, &aclRuleNumber, collection.FindAclRuleNumberByRule(rule))
+	assert.Equal(t, &aclRuleNumber, collection.FindACLRuleNumberByRule(rule))
 }
 
 func TestACLEntryCollectionCanMapIpv6AclToDomainRule(t *testing.T) {
@@ -88,5 +88,5 @@ func TestACLEntryCollectionCanMapIpv6AclToDomainRule(t *testing.T) {
 
 	assert.NotNil(t, collection.rules)
 	assert.NotEmpty(t, collection.rules)
-	assert.Equal(t, &aclRuleNumber, collection.FindAclRuleNumberByRule(rule))
+	assert.Equal(t, &aclRuleNumber, collection.FindACLRuleNumberByRule(rule))
 }

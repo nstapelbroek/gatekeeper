@@ -16,6 +16,6 @@ func TestRuleCanConvertToString(t *testing.T) {
 
 	println(rule.String())
 	if rule.String() != "Rule-outbound-tcp-192.168.1.12-ffffff00-20-22" {
-		t.Errorf("Rule converstion to string did not match expected result")
+		t.Errorf("Rule conversion to string did not match expected result")
 	}
 }

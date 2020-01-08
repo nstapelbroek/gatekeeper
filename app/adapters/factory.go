@@ -1,4 +1,3 @@
-// Package adapters holds the generic structs and interfaces for the adapter implementations and resolvers
 package adapters
 
 import (
@@ -12,25 +11,25 @@ import (
 	"github.com/spf13/viper"
 )
 
+// AdapterFactory will act as the owner of all adapter instances
 type AdapterFactory struct {
-	config            *viper.Viper
 	adapterCollection []domain.Adapter
 }
 
+// NewAdapterFactory is a constructor method for AdapterFactory
 func NewAdapterFactory(config *viper.Viper) (*AdapterFactory, error) {
 	f := new(AdapterFactory)
-	f.config = config
 
 	doToken := config.GetString("digitalocean_personal_access_token")
-	doFirewallId := config.GetString("digitalocean_firewall_id")
-	if len(doToken) > 0 && len(doFirewallId) > 0 {
-		f.adapterCollection = append(f.adapterCollection, digitalocean.NewDigitalOceanAdapter(doToken, doFirewallId))
+	doFirewallID := config.GetString("digitalocean_firewall_id")
+	if len(doToken) > 0 && len(doFirewallID) > 0 {
+		f.adapterCollection = append(f.adapterCollection, digitalocean.NewDigitalOceanAdapter(doToken, doFirewallID))
 	}
 
 	vultrToken := config.GetString("vultr_personal_access_token")
-	vultrFirewallId := config.GetString("vultr_firewall_id")
-	if len(vultrToken) > 0 && len(vultrFirewallId) > 0 {
-		f.adapterCollection = append(f.adapterCollection, vultr.NewVultrAdapter(vultrToken, vultrFirewallId))
+	vultrFirewallID := config.GetString("vultr_firewall_id")
+	if len(vultrToken) > 0 && len(vultrFirewallID) > 0 {
+		f.adapterCollection = append(f.adapterCollection, vultr.NewVultrAdapter(vultrToken, vultrFirewallID))
 	}
 
 	awsKey := config.GetString("aws_access_key")
@@ -38,8 +37,8 @@ func NewAdapterFactory(config *viper.Viper) (*AdapterFactory, error) {
 	awsRegion := config.GetString("aws_region")
 	if len(awsKey) > 0 && len(awsSecret) > 0 && len(awsRegion) > 0 {
 		awsClient := aws.NewAWSClient(awsKey, awsSecret, awsRegion)
-		if awsSecurityGroupId := config.GetString("aws_security_group_id"); len(awsSecurityGroupId) > 0 {
-			f.adapterCollection = append(f.adapterCollection, ec2.NewAWSSecurityGroupAdapter(awsClient, awsSecurityGroupId))
+		if awsSecurityGroupID := config.GetString("aws_security_group_id"); len(awsSecurityGroupID) > 0 {
+			f.adapterCollection = append(f.adapterCollection, ec2.NewAWSSecurityGroupAdapter(awsClient, awsSecurityGroupID))
 		}
 		if awsNetworkACLId := config.GetString("aws_network_acl_id"); len(awsNetworkACLId) > 0 {
 			f.adapterCollection = append(f.adapterCollection, vpc.NewAWSNetworkACLAdapter(awsClient, awsNetworkACLId, config.GetString("aws_network_acl_rule_number_range")))
@@ -53,6 +52,7 @@ func NewAdapterFactory(config *viper.Viper) (*AdapterFactory, error) {
 	return f, nil
 }
 
+// GetAdapters exposes the internal collection of build adapter instances
 func (c AdapterFactory) GetAdapters() (adapterCollection *[]domain.Adapter) {
 	return &c.adapterCollection
 }

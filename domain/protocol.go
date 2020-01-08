@@ -56,7 +56,7 @@ func (p Protocol) String() string {
 	}
 }
 
-// ProtocolNumber() will convert the object to an IANA protocol number, see https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+// ProtocolNumber will convert the object to an IANA protocol number, see https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 func (p Protocol) ProtocolNumber() int {
 	switch p {
 	case TCP:

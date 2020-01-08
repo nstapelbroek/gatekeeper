@@ -7,16 +7,18 @@ import (
 	"sync"
 )
 
+// AdapterDispatcher will coordinate calling all configured adapters in a WaitGroup
 type AdapterDispatcher struct {
 	adapterInstances *[]domain.Adapter
 	logger           *zap.Logger
 }
 
-type WrappedAdapterResult struct {
+type wrappedAdapterResult struct {
 	Name   string
 	Result domain.AdapterResult
 }
 
+// NewAdapterDispatcher is a constructor method for AdapterDispatcher
 func NewAdapterDispatcher(adapterInstances *[]domain.Adapter, logger *zap.Logger) (*AdapterDispatcher, error) {
 	d := AdapterDispatcher{
 		adapterInstances: adapterInstances,
@@ -26,16 +28,18 @@ func NewAdapterDispatcher(adapterInstances *[]domain.Adapter, logger *zap.Logger
 	return &d, nil
 }
 
+// Open will call CreateRules on all configured adapters in the AdapterDispatcher
 func (ad AdapterDispatcher) Open(rules []domain.Rule) (map[string]string, error) {
 	return ad.dispatch(rules, "create")
 }
 
+// Close will call CreateRules on all configured adapters in the AdapterDispatcher
 func (ad AdapterDispatcher) Close(rules []domain.Rule) (map[string]string, error) {
 	return ad.dispatch(rules, "delete")
 }
 
 func (ad AdapterDispatcher) dispatch(rules []domain.Rule, action string) (map[string]string, error) {
-	resultChannel := make(chan WrappedAdapterResult)
+	resultChannel := make(chan wrappedAdapterResult)
 	var wg sync.WaitGroup
 
 	for _, adapter := range *ad.adapterInstances {
@@ -50,7 +54,7 @@ func (ad AdapterDispatcher) dispatch(rules []domain.Rule, action string) (map[st
 				result = a.DeleteRules(rules)
 			}
 
-			resultChannel <- WrappedAdapterResult{
+			resultChannel <- wrappedAdapterResult{
 				Name:   a.ToString(),
 				Result: result,
 			}
@@ -65,7 +69,7 @@ func (ad AdapterDispatcher) dispatch(rules []domain.Rule, action string) (map[st
 	return ad.processDispatchResults(resultChannel)
 }
 
-func (ad AdapterDispatcher) processDispatchResults(resultChannel chan WrappedAdapterResult) (dispatchResult map[string]string, err error) {
+func (ad AdapterDispatcher) processDispatchResults(resultChannel chan wrappedAdapterResult) (dispatchResult map[string]string, err error) {
 	hasErr := false
 	dispatchResult = make(map[string]string)
 

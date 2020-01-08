@@ -7,23 +7,26 @@ import (
 	"github.com/nstapelbroek/gatekeeper/domain"
 )
 
-type adapter struct {
+// Adapter is a AWS EC2 Security Groups API implementation of the domain.Adapter interface
+type Adapter struct {
 	client          *ec2.Client
-	securityGroupId string
+	securityGroupID string
 }
 
-func NewAWSSecurityGroupAdapter(client *ec2.Client, securityGroupId string) *adapter {
-	return &adapter{
+// NewAWSSecurityGroupAdapter is a constructor for Adapter
+func NewAWSSecurityGroupAdapter(client *ec2.Client, securityGroupID string) *Adapter {
+	return &Adapter{
 		client:          client,
-		securityGroupId: securityGroupId,
+		securityGroupID: securityGroupID,
 	}
 }
 
-func (a *adapter) ToString() string {
+// ToString satisfies the domain.Adapter interface
+func (a *Adapter) ToString() string {
 	return "aws-security-group"
 }
 
-func (a *adapter) createIpPermissions(rules []domain.Rule) []ec2.IpPermission {
+func (a *Adapter) createIPPermissions(rules []domain.Rule) []ec2.IpPermission {
 	permissions := make([]ec2.IpPermission, len(rules))
 	for index, rule := range rules {
 		permission := ec2.IpPermission{
@@ -44,10 +47,11 @@ func (a *adapter) createIpPermissions(rules []domain.Rule) []ec2.IpPermission {
 	return permissions
 }
 
-func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
+// CreateRules satisfies the domain.Adapter interface
+func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult) {
 	input := ec2.AuthorizeSecurityGroupIngressInput{
-		IpPermissions: a.createIpPermissions(rules),
-		GroupId:       aws.String(a.securityGroupId),
+		IpPermissions: a.createIPPermissions(rules),
+		GroupId:       aws.String(a.securityGroupID),
 	}
 
 	req := a.client.AuthorizeSecurityGroupIngressRequest(&input)
@@ -61,10 +65,11 @@ func (a *adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 	return
 }
 
-func (a *adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
+// DeleteRules satisfies the domain.Adapter interface
+func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
 	input := ec2.RevokeSecurityGroupIngressInput{
-		IpPermissions: a.createIpPermissions(rules),
-		GroupId:       aws.String(a.securityGroupId),
+		IpPermissions: a.createIPPermissions(rules),
+		GroupId:       aws.String(a.securityGroupID),
 	}
 
 	req := a.client.RevokeSecurityGroupIngressRequest(&input)
