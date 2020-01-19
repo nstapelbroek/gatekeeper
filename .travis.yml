@@ -33,7 +33,7 @@ script:
 
 after_success:
   - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-    docker login -u="nstapelbroekbot" -p="$DOCKERHUB_PASSWORD";
+    printenv DOCKERHUB_PASSWORD | docker login --username nstapelbroekbot --password-stdin;
     docker tag nstapelbroek/gatekeeper:$TRAVIS_BRANCH docker.io/nstapelbroek/gatekeeper:$TRAVIS_BRANCH;
     docker push docker.io/nstapelbroek/gatekeeper;
     fi
