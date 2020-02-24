@@ -12,7 +12,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.6.2
 	github.com/stretchr/testify v1.4.0
-	go.uber.org/zap v1.13.0
+	go.uber.org/zap v1.14.0
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	google.golang.org/appengine v1.6.1 // indirect
