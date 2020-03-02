@@ -28,6 +28,8 @@ github.com/digitalocean/godo v1.29.0 h1:KgNNU0k9SZqVgn7m8NN9iDsq0+nluHBe8HR9QE0Q
 github.com/digitalocean/godo v1.29.0/go.mod h1:iJnN9rVu6K5LioLxLimlq0uRI+y/eAQjROUmeU/r0hY=
 github.com/digitalocean/godo v1.30.0 h1:4Zb+xBlKMXKg772eyQk6px3sk9RhWj/CR75tQ375A/U=
 github.com/digitalocean/godo v1.30.0/go.mod h1:iJnN9rVu6K5LioLxLimlq0uRI+y/eAQjROUmeU/r0hY=
+github.com/digitalocean/godo v1.31.0 h1:8xjJPQyLJ/2VkFVplFcj2aZTK6lE7SV+G0HyhqRdq1E=
+github.com/digitalocean/godo v1.31.0/go.mod h1:iJnN9rVu6K5LioLxLimlq0uRI+y/eAQjROUmeU/r0hY=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
