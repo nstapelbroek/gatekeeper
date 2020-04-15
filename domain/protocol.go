@@ -24,22 +24,18 @@ const (
 func NewProtocolFromString(protocol string) (Protocol, error) {
 	var p Protocol
 
-	if strings.ToLower(protocol) == "tcp" {
+	switch strings.ToLower(protocol) {
+	case "tcp", "6":
 		p = TCP
-		return p, nil
-	}
-
-	if strings.ToLower(protocol) == "udp" {
+	case "udp", "17":
 		p = UDP
-		return p, nil
-	}
-
-	if strings.ToLower(protocol) == "icmp" {
+	case "icmp", "1":
 		p = ICMP
-		return p, nil
+	default:
+		return p, ErrInvalidProtocolString
 	}
 
-	return p, ErrInvalidProtocolString
+	return p, nil
 }
 
 // String will convert the integer value of Protocol back to a capitalized string value

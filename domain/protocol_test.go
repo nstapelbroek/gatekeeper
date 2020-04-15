@@ -16,18 +16,21 @@ func TestNewProtocolFromStringUDP(t *testing.T) {
 	testNewProtocolFromString("UDP", "udp", t)
 	testNewProtocolFromString("uDp", "udp", t)
 	testNewProtocolFromString("udp", "udp", t)
+	testNewProtocolFromString("17", "udp", t)
 }
 
 func TestNewProtocolFromStringTCP(t *testing.T) {
 	testNewProtocolFromString("TCP", "tcp", t)
 	testNewProtocolFromString("TcP", "tcp", t)
 	testNewProtocolFromString("tcp", "tcp", t)
+	testNewProtocolFromString("6", "tcp", t)
 }
 
 func TestNewProtocolFromStringICMP(t *testing.T) {
 	testNewProtocolFromString("ICMP", "icmp", t)
 	testNewProtocolFromString("iCmP", "icmp", t)
 	testNewProtocolFromString("icmp", "icmp", t)
+	testNewProtocolFromString("1", "icmp", t)
 }
 
 func TestNewProtocolFromInvalidString(t *testing.T) {
