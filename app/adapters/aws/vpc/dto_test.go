@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewACLEntryCollectionWithEmptyData(t *testing.T) {
-	collection := NewACLEntryCollection([]ec2.NetworkAclEntry{})
+	collection := NewEntryCollection([]ec2.NetworkAclEntry{})
 	rule := domain.Rule{
 		Direction: domain.Inbound,
 		Protocol:  domain.ICMP,
@@ -19,13 +19,13 @@ func TestNewACLEntryCollectionWithEmptyData(t *testing.T) {
 		Port:      domain.PortRange{},
 	}
 
-	assert.NotNil(t, collection.rules)
-	assert.Empty(t, collection.rules)
-	assert.Nil(t, collection.FindACLRuleNumberByRule(rule))
+	assert.NotNil(t, collection.entries)
+	assert.Empty(t, collection.entries)
+	assert.Nil(t, collection.findByRule(rule))
 }
 
 func TestNewACLEntryCollectionWithNil(t *testing.T) {
-	collection := NewACLEntryCollection(nil)
+	collection := NewEntryCollection(nil)
 	rule := domain.Rule{
 		Direction: domain.Inbound,
 		Protocol:  domain.ICMP,
@@ -33,9 +33,9 @@ func TestNewACLEntryCollectionWithNil(t *testing.T) {
 		Port:      domain.PortRange{},
 	}
 
-	assert.NotNil(t, collection.rules)
-	assert.Empty(t, collection.rules)
-	assert.Nil(t, collection.FindACLRuleNumberByRule(rule))
+	assert.NotNil(t, collection.entries)
+	assert.Empty(t, collection.entries)
+	assert.Nil(t, collection.findByRule(rule))
 }
 
 func TestACLEntryCollectionCanMapIpv4AclToDomainRule(t *testing.T) {
@@ -53,15 +53,15 @@ func TestACLEntryCollectionCanMapIpv4AclToDomainRule(t *testing.T) {
 		Egress:     aws.Bool(false),
 		PortRange:  &ec2.PortRange{From: aws.Int64(20), To: aws.Int64(22)},
 		Protocol:   aws.String(strconv.Itoa(domain.TCP.ProtocolNumber())),
-		RuleAction: "allow",
+		RuleAction: ec2.RuleActionAllow,
 		RuleNumber: &aclRuleNumber,
 	}
 
-	collection := NewACLEntryCollection([]ec2.NetworkAclEntry{aclEntry})
+	collection := NewEntryCollection([]ec2.NetworkAclEntry{aclEntry})
 
-	assert.NotNil(t, collection.rules)
-	assert.NotEmpty(t, collection.rules)
-	assert.Equal(t, &aclRuleNumber, collection.FindACLRuleNumberByRule(rule))
+	assert.NotNil(t, collection.entries)
+	assert.NotEmpty(t, collection.entries)
+	assert.Equal(t, &aclEntry, collection.findByRule(rule))
 }
 
 func TestACLEntryCollectionCanMapIpv6AclToDomainRule(t *testing.T) {
@@ -80,13 +80,13 @@ func TestACLEntryCollectionCanMapIpv6AclToDomainRule(t *testing.T) {
 		Egress:        aws.Bool(false),
 		PortRange:     &ec2.PortRange{From: aws.Int64(20), To: aws.Int64(22)},
 		Protocol:      aws.String(strconv.Itoa(domain.TCP.ProtocolNumber())),
-		RuleAction:    "allow",
+		RuleAction:    ec2.RuleActionAllow,
 		RuleNumber:    &aclRuleNumber,
 	}
 
-	collection := NewACLEntryCollection([]ec2.NetworkAclEntry{aclEntry})
+	collection := NewEntryCollection([]ec2.NetworkAclEntry{aclEntry})
 
-	assert.NotNil(t, collection.rules)
-	assert.NotEmpty(t, collection.rules)
-	assert.Equal(t, &aclRuleNumber, collection.FindACLRuleNumberByRule(rule))
+	assert.NotNil(t, collection.entries)
+	assert.NotEmpty(t, collection.entries)
+	assert.Equal(t, &aclEntry, collection.findByRule(rule))
 }
