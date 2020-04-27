@@ -1,8 +1,8 @@
 language: go
 
 go:
-  - "1.12"
   - "1.13"
+  - "1.14"
   - "master"
 
 matrix:
@@ -21,7 +21,7 @@ services:
 
 install:
   - go mod tidy
-  - golangci-lint --version || curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.20.0
+  - golangci-lint --version || curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.25.0
 
 script:
   - golangci-lint run
