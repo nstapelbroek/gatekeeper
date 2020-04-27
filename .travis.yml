@@ -9,9 +9,7 @@ matrix:
   allow_failures:
     - go: "master"
 
-branches:
-  only:
-    - latest
+if: type != push OR branch = latest
 
 env:
   - GO111MODULE=on
@@ -32,7 +30,7 @@ script:
   - "curl -X POST http://localhost:8080 -H 'Authorization: Basic dXNlcjpwYXNzd29yZA==' | grep 'Invalid API key'"
 
 after_success:
-  - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+  - if [[ "$TRAVIS_BRANCH" == "latest" ]]; then
     printenv DOCKERHUB_PASSWORD | docker login --username nstapelbroekbot --password-stdin;
     docker tag nstapelbroek/gatekeeper:$TRAVIS_BRANCH docker.io/nstapelbroek/gatekeeper:$TRAVIS_BRANCH;
     docker push docker.io/nstapelbroek/gatekeeper;
