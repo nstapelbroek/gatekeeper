@@ -48,6 +48,8 @@ github.com/digitalocean/godo v1.35.1 h1:3P5timR4LTqcCafzrCgV2j83ck4aWb937ybFC7YQ
 github.com/digitalocean/godo v1.35.1/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/digitalocean/godo v1.36.0 h1:eRF8wNzHZyU7/wI3De/MQgiVSWdseDaf27bXj2gnOO0=
 github.com/digitalocean/godo v1.36.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
+github.com/digitalocean/godo v1.37.0 h1:NEj5ne2cvLBHo1GJY1DNN/iEt9ipa72CMwwAjKEA530=
+github.com/digitalocean/godo v1.37.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
