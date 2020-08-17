@@ -7,7 +7,6 @@ require (
 	github.com/aws/aws-sdk-go-v2 v0.24.0
 	github.com/digitalocean/godo v1.42.1
 	github.com/gin-gonic/gin v1.6.3
-	github.com/jawher/mow.cli v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
