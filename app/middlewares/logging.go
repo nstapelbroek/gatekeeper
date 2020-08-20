@@ -14,7 +14,7 @@ func RegisterAccessLogMiddleware(app *gin.Engine, logger *zap.Logger) {
 // LogRequests is a wrapper around the handlerChain, writing an Extended Log Format entry on handled HTTP request
 func LogRequests(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		startTime := time.Now()
+		startTime := time.Now().In(time.UTC)
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
 		if raw != "" {
@@ -28,7 +28,7 @@ func LogRequests(logger *zap.Logger) gin.HandlerFunc {
 			"%s - %s [%s] \"%s %s HTTP/%d.%d\" %d %d \"%s\" \"%s\"",
 			c.ClientIP(),
 			c.GetString(gin.AuthUserKey),
-			startTime.Format("02/Jan/1993:15:04:05 -0700"),
+			startTime.Format("02/Jan/2006 15:04:05 -0700"),
 			c.Request.Method,
 			path,
 			c.Request.ProtoMajor,
