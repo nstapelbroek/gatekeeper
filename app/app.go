@@ -54,6 +54,7 @@ func bootLogging(a *App) {
 }
 
 func bootMiddleware(a *App) {
+	// Order matters here, note that logging registered before anything that can yield a response
 	middlewares.RegisterAccessLogMiddleware(a.router, a.logger)
 	middlewares.RegisterBasicAuthentication(a.router, a.config)
 }
