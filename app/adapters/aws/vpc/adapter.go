@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"strconv"
 	"strings"
@@ -18,20 +19,20 @@ type Adapter struct {
 }
 
 type aclRuleNumberRange struct {
-	min int64
-	max int64
+	min int32
+	max int32
 }
 
 // NewAWSNetworkACLAdapter is a constructor for Adapter
 func NewAWSNetworkACLAdapter(client *ec2.Client, networkACLID string, numberRange string) *Adapter {
 	nRange := strings.SplitN(numberRange, "-", 2)
-	min, _ := strconv.ParseInt(nRange[0], 10, 0)
-	max, _ := strconv.ParseInt(nRange[1], 10, 0)
+	min, _ := strconv.Atoi(nRange[0])
+	max, _ := strconv.Atoi(nRange[1])
 
 	return &Adapter{
 		client:           client,
 		networkACLID:     networkACLID,
-		allowedRuleRange: aclRuleNumberRange{min: min, max: max},
+		allowedRuleRange: aclRuleNumberRange{min: int32(min), max: int32(max)},
 	}
 }
 
@@ -48,7 +49,7 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 		highestRN = a.allowedRuleRange.min
 	}
 
-	if a.allowedRuleRange.max < (highestRN + int64(len(rules))) {
+	if a.allowedRuleRange.max < (highestRN + int32(len(rules))) {
 		return domain.AdapterResult{Error: errors.New("not enough rule numbers available")}
 	}
 
@@ -57,10 +58,9 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 			continue
 		}
 
-		n := highestRN + int64(i+1)
-		req := a.client.CreateNetworkAclEntryRequest(createAddEntryInput(rule, a.networkACLID, n))
+		n := highestRN + int32(i+1)
 
-		_, err := req.Send(context.TODO())
+		_, err := a.client.CreateNetworkAclEntry(context.Background(), createAddEntryInput(rule, a.networkACLID, n))
 		if err != nil {
 			return domain.AdapterResult{Error: err}
 		}
@@ -78,8 +78,7 @@ func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 			continue
 		}
 
-		req := a.client.DeleteNetworkAclEntryRequest(createDeleteEntryInput(persistedRule, a.networkACLID))
-		_, _ = req.Send(context.TODO())
+		_, _ = a.client.DeleteNetworkAclEntry(context.Background(), createDeleteEntryInput(persistedRule, a.networkACLID))
 	}
 
 	return domain.AdapterResult{}
@@ -87,19 +86,16 @@ func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 
 func (a *Adapter) getPersistedACLEntries() *EntryCollection {
 	input := &ec2.DescribeNetworkAclsInput{
-		NetworkAclIds: []string{
-			a.networkACLID,
-		},
-		Filters: []ec2.Filter{
+		NetworkAclIds: []*string{aws.String(a.networkACLID)},
+		Filters: []*types.Filter{
 			{
 				Name:   aws.String("entry.rule-action"),
-				Values: []string{"allow"},
+				Values: []*string{aws.String("allow")},
 			},
 		},
 	}
 
-	req := a.client.DescribeNetworkAclsRequest(input)
-	resp, err := req.Send(context.Background())
+	resp, err := a.client.DescribeNetworkAcls(context.Background(), input)
 	if err != nil || len(resp.NetworkAcls) == 0 {
 		return NewEntryCollection(nil) // todo log error
 	}

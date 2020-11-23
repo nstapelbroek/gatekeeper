@@ -3,25 +3,26 @@ package vpc
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"net"
 	"strconv"
 )
 
 type EntryCollection struct {
-	entries       map[string][]ec2.NetworkAclEntry
-	highestNumber int64
+	entries       map[string][]*types.NetworkAclEntry
+	highestNumber int32
 }
 
-func (c EntryCollection) findByRule(rule domain.Rule) *ec2.NetworkAclEntry {
+func (c EntryCollection) findByRule(rule domain.Rule) *types.NetworkAclEntry {
 	persistedRules, found := c.entries[rule.String()]
 	if !found {
 		return nil
 	}
 
 	for i := range persistedRules {
-		if persistedRules[i].RuleAction == ec2.RuleActionAllow {
-			return &persistedRules[i]
+		if persistedRules[i].RuleAction == types.RuleActionAllow {
+			return persistedRules[i]
 		}
 	}
 
@@ -29,9 +30,9 @@ func (c EntryCollection) findByRule(rule domain.Rule) *ec2.NetworkAclEntry {
 }
 
 // NewACLEntryCollection is a constructor for ACLEntryCollection
-func NewEntryCollection(entries []ec2.NetworkAclEntry) *EntryCollection {
+func NewEntryCollection(entries []*types.NetworkAclEntry) *EntryCollection {
 	c := &EntryCollection{
-		entries:       make(map[string][]ec2.NetworkAclEntry),
+		entries:       make(map[string][]*types.NetworkAclEntry),
 		highestNumber: 0,
 	}
 
@@ -52,7 +53,7 @@ func NewEntryCollection(entries []ec2.NetworkAclEntry) *EntryCollection {
 	return c
 }
 
-func networkEntryToRule(entry ec2.NetworkAclEntry) (*domain.Rule, error) {
+func networkEntryToRule(entry *types.NetworkAclEntry) (*domain.Rule, error) {
 	cidr := entry.Ipv6CidrBlock
 	if cidr == nil {
 		cidr = entry.CidrBlock
@@ -77,21 +78,21 @@ func networkEntryToRule(entry ec2.NetworkAclEntry) (*domain.Rule, error) {
 		Protocol:  protocol,
 		IPNet:     net.IPNet{IP: ip, Mask: ipNet.Mask},
 		Port: domain.PortRange{
-			BeginPort: *entry.PortRange.From,
-			EndPort:   *entry.PortRange.To,
+			BeginPort: int64(*entry.PortRange.From),
+			EndPort:   int64(*entry.PortRange.To),
 		},
 	}, nil
 }
 
-func createAddEntryInput(rule domain.Rule, networkAclID string, ruleNumber int64) *ec2.CreateNetworkAclEntryInput {
+func createAddEntryInput(rule domain.Rule, networkAclID string, ruleNumber int32) *ec2.CreateNetworkAclEntryInput {
 	input := &ec2.CreateNetworkAclEntryInput{
 		CidrBlock:    aws.String(rule.IPNet.String()),
 		Egress:       aws.Bool(rule.Direction.IsOutbound()),
 		NetworkAclId: aws.String(networkAclID),
-		PortRange:    &ec2.PortRange{From: aws.Int64(rule.Port.BeginPort), To: aws.Int64(rule.Port.EndPort)},
+		PortRange:    &types.PortRange{From: aws.Int32(int32(rule.Port.BeginPort)), To: aws.Int32(int32(rule.Port.EndPort))},
 		Protocol:     aws.String(strconv.Itoa(rule.Protocol.ProtocolNumber())),
 		RuleAction:   "allow",
-		RuleNumber:   aws.Int64(ruleNumber),
+		RuleNumber:   aws.Int32(ruleNumber),
 	}
 
 	if rule.IPNet.IP.To4() == nil {
@@ -102,7 +103,7 @@ func createAddEntryInput(rule domain.Rule, networkAclID string, ruleNumber int64
 	return input
 }
 
-func createDeleteEntryInput(persistedRule *ec2.NetworkAclEntry, networkAclID string) *ec2.DeleteNetworkAclEntryInput {
+func createDeleteEntryInput(persistedRule *types.NetworkAclEntry, networkAclID string) *ec2.DeleteNetworkAclEntryInput {
 	return &ec2.DeleteNetworkAclEntryInput{
 		Egress:       persistedRule.Egress,
 		NetworkAclId: aws.String(networkAclID),
