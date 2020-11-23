@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/nstapelbroek/gatekeeper/domain"
 )
 
@@ -26,19 +27,19 @@ func (a *Adapter) ToString() string {
 	return "aws-security-group"
 }
 
-func (a *Adapter) createIPPermissions(rules []domain.Rule) []ec2.IpPermission {
-	permissions := make([]ec2.IpPermission, len(rules))
+func (a *Adapter) createIPPermissions(rules []domain.Rule) []*types.IpPermission {
+	permissions := make([]*types.IpPermission, len(rules))
 	for index, rule := range rules {
-		permission := ec2.IpPermission{
+		permission := &types.IpPermission{
 			IpProtocol: aws.String(rule.Protocol.String()),
-			FromPort:   aws.Int64(int64(rule.Port.BeginPort)),
-			ToPort:     aws.Int64(int64(rule.Port.EndPort)),
+			FromPort:   aws.Int32(int32(rule.Port.BeginPort)),
+			ToPort:     aws.Int32(int32(rule.Port.EndPort)),
 		}
 
 		if rule.IPNet.IP.To4() == nil {
-			permission.Ipv6Ranges = []ec2.Ipv6Range{{CidrIpv6: aws.String(rule.IPNet.String())}}
+			permission.Ipv6Ranges = []*types.Ipv6Range{{CidrIpv6: aws.String(rule.IPNet.String())}}
 		} else {
-			permission.IpRanges = []ec2.IpRange{{CidrIp: aws.String(rule.IPNet.String())}}
+			permission.IpRanges = []*types.IpRange{{CidrIp: aws.String(rule.IPNet.String())}}
 		}
 
 		permissions[index] = permission
@@ -54,13 +55,8 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 		GroupId:       aws.String(a.securityGroupID),
 	}
 
-	req := a.client.AuthorizeSecurityGroupIngressRequest(&input)
-	resp, err := req.Send(context.Background())
-
+	_, err := a.client.AuthorizeSecurityGroupIngress(context.Background(), &input)
 	result.Error = err
-	if resp != nil {
-		result.Output = resp.String()
-	}
 
 	return
 }
@@ -72,13 +68,8 @@ func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 		GroupId:       aws.String(a.securityGroupID),
 	}
 
-	req := a.client.RevokeSecurityGroupIngressRequest(&input)
-	resp, err := req.Send(context.Background())
-
+	_, err := a.client.RevokeSecurityGroupIngress(context.Background(), &input)
 	result.Error = err
-	if resp != nil {
-		result.Output = resp.String()
-	}
 
 	return
 }
