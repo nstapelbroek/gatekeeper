@@ -54,7 +54,7 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 	}
 
 	for i, rule := range rules {
-		if currentEntries.findByRule(rule) != nil {
+		if _, found := currentEntries.findByRule(rule); !found {
 			continue
 		}
 
@@ -73,8 +73,8 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult) {
 	currentEntries := a.getPersistedACLEntries()
 	for _, rule := range rules {
-		persistedRule := currentEntries.findByRule(rule)
-		if persistedRule == nil {
+		persistedRule, found := currentEntries.findByRule(rule)
+		if !found {
 			continue
 		}
 
@@ -86,11 +86,11 @@ func (a *Adapter) DeleteRules(rules []domain.Rule) (result domain.AdapterResult)
 
 func (a *Adapter) getPersistedACLEntries() *EntryCollection {
 	input := &ec2.DescribeNetworkAclsInput{
-		NetworkAclIds: []*string{aws.String(a.networkACLID)},
-		Filters: []*types.Filter{
+		NetworkAclIds: []string{a.networkACLID},
+		Filters: []types.Filter{
 			{
 				Name:   aws.String("entry.rule-action"),
-				Values: []*string{aws.String("allow")},
+				Values: []string{"allow"},
 			},
 		},
 	}

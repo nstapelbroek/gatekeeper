@@ -10,29 +10,30 @@ import (
 )
 
 type EntryCollection struct {
-	entries       map[string][]*types.NetworkAclEntry
+	entries       map[string][]types.NetworkAclEntry
 	highestNumber int32
 }
 
-func (c EntryCollection) findByRule(rule domain.Rule) *types.NetworkAclEntry {
+func (c EntryCollection) findByRule(rule domain.Rule) (types.NetworkAclEntry, bool) {
+	var foundRule types.NetworkAclEntry
 	persistedRules, found := c.entries[rule.String()]
 	if !found {
-		return nil
+		return foundRule, false
 	}
 
 	for i := range persistedRules {
 		if persistedRules[i].RuleAction == types.RuleActionAllow {
-			return persistedRules[i]
+			return persistedRules[i], true
 		}
 	}
 
-	return nil
+	return foundRule, false
 }
 
 // NewACLEntryCollection is a constructor for ACLEntryCollection
-func NewEntryCollection(entries []*types.NetworkAclEntry) *EntryCollection {
+func NewEntryCollection(entries []types.NetworkAclEntry) *EntryCollection {
 	c := &EntryCollection{
-		entries:       make(map[string][]*types.NetworkAclEntry),
+		entries:       make(map[string][]types.NetworkAclEntry),
 		highestNumber: 0,
 	}
 
@@ -53,7 +54,7 @@ func NewEntryCollection(entries []*types.NetworkAclEntry) *EntryCollection {
 	return c
 }
 
-func networkEntryToRule(entry *types.NetworkAclEntry) (*domain.Rule, error) {
+func networkEntryToRule(entry types.NetworkAclEntry) (*domain.Rule, error) {
 	cidr := entry.Ipv6CidrBlock
 	if cidr == nil {
 		cidr = entry.CidrBlock
@@ -103,7 +104,7 @@ func createAddEntryInput(rule domain.Rule, networkAclID string, ruleNumber int32
 	return input
 }
 
-func createDeleteEntryInput(persistedRule *types.NetworkAclEntry, networkAclID string) *ec2.DeleteNetworkAclEntryInput {
+func createDeleteEntryInput(persistedRule types.NetworkAclEntry, networkAclID string) *ec2.DeleteNetworkAclEntryInput {
 	return &ec2.DeleteNetworkAclEntryInput{
 		Egress:       persistedRule.Egress,
 		NetworkAclId: aws.String(networkAclID),

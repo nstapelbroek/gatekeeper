@@ -27,19 +27,19 @@ func (a *Adapter) ToString() string {
 	return "aws-security-group"
 }
 
-func (a *Adapter) createIPPermissions(rules []domain.Rule) []*types.IpPermission {
-	permissions := make([]*types.IpPermission, len(rules))
+func (a *Adapter) createIPPermissions(rules []domain.Rule) []types.IpPermission {
+	permissions := make([]types.IpPermission, len(rules))
 	for index, rule := range rules {
-		permission := &types.IpPermission{
+		permission := types.IpPermission{
 			IpProtocol: aws.String(rule.Protocol.String()),
 			FromPort:   aws.Int32(int32(rule.Port.BeginPort)),
 			ToPort:     aws.Int32(int32(rule.Port.EndPort)),
 		}
 
 		if rule.IPNet.IP.To4() == nil {
-			permission.Ipv6Ranges = []*types.Ipv6Range{{CidrIpv6: aws.String(rule.IPNet.String())}}
+			permission.Ipv6Ranges = []types.Ipv6Range{{CidrIpv6: aws.String(rule.IPNet.String())}}
 		} else {
-			permission.IpRanges = []*types.IpRange{{CidrIp: aws.String(rule.IPNet.String())}}
+			permission.IpRanges = []types.IpRange{{CidrIp: aws.String(rule.IPNet.String())}}
 		}
 
 		permissions[index] = permission
