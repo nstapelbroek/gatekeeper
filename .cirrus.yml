@@ -1,0 +1,13 @@
+container:
+  image: golang:1.16
+
+env:
+  GOPROXY: https://proxy.golang.org
+
+test_task:
+  modules_cache:
+    fingerprint_script: cat go.sum
+    folder: $GOPATH/pkg/mod
+  get_script: go mod download
+  build_script: go build ./...
+  test_script: go test ./...
