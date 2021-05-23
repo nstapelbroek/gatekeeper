@@ -11,3 +11,14 @@ test_task:
   get_script: go mod download
   build_script: go build ./...
   test_script: go test ./...
+
+lint_task:
+  name: GolangCI Lint
+  container:
+    image: golangci/golangci-lint:latest
+  run_script: golangci-lint run -v --out-format json > lint-report.json
+  always:
+    golangci_artifacts:
+      path: lint-report.json
+      type: text/json
+      format: golangci
