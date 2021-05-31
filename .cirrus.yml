@@ -5,6 +5,7 @@ env:
   GOPROXY: https://proxy.golang.org
 
 test_task:
+  name: Go test
   modules_cache:
     fingerprint_script: cat go.sum
     folder: $GOPATH/pkg/mod
