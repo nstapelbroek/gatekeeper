@@ -10,9 +10,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.11.0
 	github.com/digitalocean/godo v1.65.0
 	github.com/gin-gonic/gin v1.7.4
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/spf13/viper v1.8.1
+	github.com/spf13/viper v1.10.0
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 )
