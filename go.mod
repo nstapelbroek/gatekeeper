@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.4.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.3.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.11.0
-	github.com/digitalocean/godo v1.65.0
+	github.com/digitalocean/godo v1.73.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/spf13/viper v1.10.0
 	github.com/stretchr/testify v1.7.0
