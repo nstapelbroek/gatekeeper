@@ -54,7 +54,7 @@ func (a *Adapter) CreateRules(rules []domain.Rule) (result domain.AdapterResult)
 	}
 
 	for i, rule := range rules {
-		if _, found := currentEntries.findByRule(rule); !found {
+		if _, found := currentEntries.findByRule(rule); found {
 			continue
 		}
 
