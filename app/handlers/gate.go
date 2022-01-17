@@ -81,7 +81,7 @@ func (g GateHandler) openSuccessResponse(c *gin.Context, ip net.IPNet, timeout t
 	message := fmt.Sprintf("%s has been whitelisted", ip.String())
 
 	if timeout > 0 {
-		message = message + fmt.Sprintf("for %.0f seconds", timeout.Seconds())
+		message = message + fmt.Sprintf(" for %.0f seconds", timeout.Seconds())
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": message, "details": details})
