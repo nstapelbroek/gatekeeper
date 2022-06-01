@@ -9,13 +9,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.29.0
 	github.com/digitalocean/godo v1.75.0
-	github.com/gin-gonic/gin v1.7.7
-	github.com/go-playground/validator/v10 v10.10.0 // indirect
+	github.com/gin-gonic/gin v1.8.0
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/spf13/afero v1.8.0 // indirect
 	github.com/spf13/viper v1.10.1
-	github.com/stretchr/testify v1.7.0
-	github.com/ugorji/go v1.2.6 // indirect
+	github.com/stretchr/testify v1.7.1
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.20.0
