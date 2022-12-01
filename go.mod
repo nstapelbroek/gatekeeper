@@ -4,9 +4,9 @@ go 1.13
 
 require (
 	github.com/JamesClonk/vultr v2.0.2+incompatible
-	github.com/aws/aws-sdk-go-v2 v1.13.0
-	github.com/aws/aws-sdk-go-v2/config v1.13.1
-	github.com/aws/aws-sdk-go-v2/credentials v1.8.0
+	github.com/aws/aws-sdk-go-v2 v1.17.1
+	github.com/aws/aws-sdk-go-v2/config v1.18.3
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.3
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.29.0
 	github.com/digitalocean/godo v1.75.0
 	github.com/gin-gonic/gin v1.7.7
