@@ -2,6 +2,7 @@ package digitalocean
 
 import (
 	"context"
+
 	"github.com/digitalocean/godo"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"golang.org/x/oauth2"

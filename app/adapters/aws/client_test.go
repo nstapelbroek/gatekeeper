@@ -1,9 +1,10 @@
 package aws
 
 import (
+	"testing"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestNewAWSClientWillSetStaticCredentials(t *testing.T) {

@@ -1,15 +1,16 @@
 package middlewares
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"regexp"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
-	"net/http"
-	"net/http/httptest"
-	"regexp"
-	"testing"
 )
 
 // testAccessLogMiddleware is a helper to prevent duplicated act logic

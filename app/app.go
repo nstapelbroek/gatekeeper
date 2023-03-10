@@ -2,6 +2,9 @@ package app
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nstapelbroek/gatekeeper/app/adapters"
 	"github.com/nstapelbroek/gatekeeper/app/handlers"
@@ -9,8 +12,6 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"log"
-	"os"
 )
 
 // App is a struct holding references to every gatekeeper component
@@ -20,7 +21,7 @@ type App struct {
 	adapterFactory    *adapters.AdapterFactory
 	adapterDispatcher *adapters.AdapterDispatcher
 	logger            *zap.Logger
-	//register       *domain.Register
+	// register       *domain.Register
 }
 
 // NewApp is a constructor method for App
@@ -86,7 +87,6 @@ func bootRoutes(a *App) {
 		a.adapterDispatcher,
 		a.logger,
 	)
-
 	if err != nil {
 		panic(err)
 	}

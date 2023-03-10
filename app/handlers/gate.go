@@ -3,14 +3,15 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/nstapelbroek/gatekeeper/app/adapters"
-	"github.com/nstapelbroek/gatekeeper/domain"
-	"go.uber.org/zap"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/nstapelbroek/gatekeeper/app/adapters"
+	"github.com/nstapelbroek/gatekeeper/domain"
+	"go.uber.org/zap"
 )
 
 // GateHandler will have methods to handle HTTP requests for opening or closing rules

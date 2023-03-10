@@ -1,13 +1,14 @@
 package vpc
 
 import (
+	"net"
+	"strconv"
+	"testing"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"github.com/stretchr/testify/assert"
-	"net"
-	"strconv"
-	"testing"
 )
 
 func TestNewACLEntryCollectionWithEmptyData(t *testing.T) {

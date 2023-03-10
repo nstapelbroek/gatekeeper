@@ -3,12 +3,13 @@ package vpc
 import (
 	"context"
 	"errors"
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/nstapelbroek/gatekeeper/domain"
-	"strconv"
-	"strings"
 )
 
 // Adapter is a AWS VPC API implementation of the domain.Adapter interface

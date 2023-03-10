@@ -2,9 +2,10 @@ package adapters
 
 import (
 	"errors"
+	"sync"
+
 	"github.com/nstapelbroek/gatekeeper/domain"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // AdapterDispatcher will coordinate calling all configured adapters in a WaitGroup

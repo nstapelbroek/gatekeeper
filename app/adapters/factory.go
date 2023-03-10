@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"errors"
+
 	"github.com/nstapelbroek/gatekeeper/app/adapters/aws"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/aws/ec2"
 	"github.com/nstapelbroek/gatekeeper/app/adapters/aws/vpc"

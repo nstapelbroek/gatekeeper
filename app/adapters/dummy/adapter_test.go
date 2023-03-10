@@ -1,9 +1,10 @@
 package dummy
 
 import (
-	"github.com/nstapelbroek/gatekeeper/domain"
 	"net"
 	"testing"
+
+	"github.com/nstapelbroek/gatekeeper/domain"
 )
 
 func getRules() []domain.Rule {
