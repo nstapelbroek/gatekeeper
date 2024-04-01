@@ -11,7 +11,7 @@ require (
 	github.com/digitalocean/godo v1.107.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/spf13/viper v1.18.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/oauth2 v0.15.0
 )
