@@ -1,6 +1,6 @@
 module github.com/nstapelbroek/gatekeeper
 
-go 1.19
+go 1.22
 
 require (
 	github.com/JamesClonk/vultr v2.0.2+incompatible

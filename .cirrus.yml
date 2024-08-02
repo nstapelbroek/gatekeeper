@@ -1,5 +1,5 @@
 container:
-  image: golang:1.19
+  image: golang:1.22
 
 env:
   GOPROXY: https://proxy.golang.org
