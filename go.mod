@@ -6,7 +6,7 @@ toolchain go1.23.1
 
 require (
 	github.com/JamesClonk/vultr v2.0.2+incompatible
-	github.com/aws/aws-sdk-go-v2 v1.36.0
+	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.4
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.57
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.202.2
