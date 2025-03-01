@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.4
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.57
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.202.2
-	github.com/digitalocean/godo v1.136.0
+	github.com/digitalocean/godo v1.138.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
