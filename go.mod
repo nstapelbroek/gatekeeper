@@ -2,14 +2,14 @@ module github.com/nstapelbroek/gatekeeper
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	github.com/JamesClonk/vultr v2.0.2+incompatible
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.207.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.211.0
 	github.com/digitalocean/godo v1.138.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/spf13/viper v1.19.0
