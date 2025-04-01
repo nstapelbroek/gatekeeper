@@ -2,7 +2,7 @@ module github.com/nstapelbroek/gatekeeper
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	github.com/JamesClonk/vultr v2.0.2+incompatible
@@ -15,7 +15,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/oauth2 v0.27.0
+	golang.org/x/oauth2 v0.28.0
 )
 
 require (
