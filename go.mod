@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.12
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.65
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.211.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.213.0
 	github.com/digitalocean/godo v1.142.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/spf13/viper v1.20.1
